@@ -1,0 +1,121 @@
+{
+    "i18n": true,
+    "type": "tabs",
+    "items": {
+        "tabConnection": {
+            "type": "panel",
+            "label": "Connection",
+            "items": {
+                "_tokenHelp": {
+                    "type": "staticText",
+                    "text": "tokenHelp",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "token": {
+                    "type": "password",
+                    "label": "Access token",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 8,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "sites": {
+                    "type": "selectSendTo",
+                    "label": "Installations",
+                    "help": "sitesHelp",
+                    "command": "getInstallations",
+                    "jsonData": "{\"token\": \"${data.token}\"}",
+                    "alsoDependsOn": [
+                        "token"
+                    ],
+                    "multiple": true,
+                    "manual": false,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 8,
+                    "lg": 6,
+                    "xl": 6
+                }
+            }
+        },
+        "tabPolling": {
+            "type": "panel",
+            "label": "Polling",
+            "items": {
+                "_intervalHelp": {
+                    "type": "staticText",
+                    "text": "intervalHelp",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
+                },
+                "diagnosticsInterval": {
+                    "type": "number",
+                    "label": "Live values / diagnostics interval",
+                    "unit": "min",
+                    "min": 1,
+                    "max": 1440,
+                    "default": 1,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 3
+                },
+                "staleMinutes": {
+                    "type": "number",
+                    "label": "Mark data as stale after",
+                    "help": "staleHelp",
+                    "unit": "min",
+                    "min": 1,
+                    "max": 10080,
+                    "default": 30,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 3
+                },
+                "phaseSums": {
+                    "type": "checkbox",
+                    "label": "Calculate phase sums",
+                    "help": "phaseSumsHelp",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 8,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "requestTimeout": {
+                    "type": "number",
+                    "label": "Request timeout",
+                    "unit": "s",
+                    "min": 5,
+                    "max": 120,
+                    "default": 30,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 3
+                }
+            }
+        }
+    }
+}

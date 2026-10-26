@@ -1,0 +1,16 @@
+{
+    "victron-vrm-api adapter settings": "Adaptereinstellungen für victron-vrm-api",
+    "Connection": "Verbindung",
+    "Polling": "Abfrage",
+    "tokenHelp": "Erstelle im VRM-Portal unter Einstellungen → Integrationen → Zugriffstoken ein Zugriffstoken.",
+    "Access token": "Zugriffstoken",
+    "Installations": "Anlagen",
+    "sitesHelp": "Leer lassen, um alle Anlagen abzufragen. Die Liste wird über die laufende Instanz geladen – wenn sie leer bleibt, zuerst das Token speichern.",
+    "intervalHelp": "Wie aktuell die Daten sind, hängt vom Log-Intervall des GX-Geräts ab (Einstellungen → VRM-Online-Portal → Log-Intervall). Häufigeres Abfragen bringt keinen Vorteil.",
+    "Live values / diagnostics interval": "Intervall Live-Werte / Diagnose",
+    "Mark data as stale after": "Daten als veraltet markieren nach",
+    "staleHelp": "Setzt info.dataStale, wenn VRM so lange keine neuen Daten vom GX-Gerät erhalten hat.",
+    "Request timeout": "Timeout für Anfragen",
+    "Calculate phase sums": "Phasensummen berechnen",
+    "phaseSumsHelp": "Legt für Leistung, Strom und Energie mit Werten für L1, L2 und L3 zusätzlich einen Summenwert im Unterordner „sum“ des Geräts an."
+}

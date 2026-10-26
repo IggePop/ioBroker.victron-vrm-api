@@ -1,0 +1,16 @@
+{
+    "victron-vrm-api adapter settings": "Adapter settings for victron-vrm-api",
+    "Connection": "Connection",
+    "Polling": "Polling",
+    "tokenHelp": "Create an access token in the VRM portal under Preferences → Integrations → Access tokens.",
+    "Access token": "Access token",
+    "Installations": "Installations",
+    "sitesHelp": "Leave empty to poll all installations. The list is loaded via the running instance – save the token first if the list stays empty.",
+    "intervalHelp": "How fresh the data is depends on the log interval of the GX device (Settings → VRM online portal → Log interval). Polling faster than that interval brings no benefit.",
+    "Live values / diagnostics interval": "Live values / diagnostics interval",
+    "Mark data as stale after": "Mark data as stale after",
+    "staleHelp": "Sets info.dataStale when VRM has received no new data from the GX device for this time.",
+    "Request timeout": "Request timeout",
+    "Calculate phase sums": "Calculate phase sums",
+    "phaseSumsHelp": "Creates an additional total for power, current and energy values reported per phase (L1, L2, L3) in the \"sum\" folder of the device."
+}

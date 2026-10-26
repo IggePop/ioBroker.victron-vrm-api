@@ -1,0 +1,126 @@
+{
+    "common": {
+        "name": "victron-vrm-api",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "uk": "Початкова версія",
+                "zh-cn": "首次出版"
+            }
+        },
+        "titleLang": {
+            "en": "Victron VRM API",
+            "de": "Victron VRM-API",
+            "ru": "API Victron VRM",
+            "pt": "API Victron VRM",
+            "nl": "Victron VRM-API",
+            "fr": "API VRM de Victron",
+            "it": "API Victron VRM",
+            "es": "API VRM de Victron",
+            "pl": "API Victron VRM",
+            "uk": "API Victron VRM",
+            "zh-cn": "Victron VRM API"
+        },
+        "desc": {
+            "en": "Reads data of Victron installations from the VRM portal API",
+            "de": "Liest Daten von Victron-Anlagen über die VRM-Portal-API",
+            "ru": "Reads data of Victron installations from the VRM portal API",
+            "pt": "Reads data of Victron installations from the VRM portal API",
+            "nl": "Reads data of Victron installations from the VRM portal API",
+            "fr": "Reads data of Victron installations from the VRM portal API",
+            "it": "Reads data of Victron installations from the VRM portal API",
+            "es": "Reads data of Victron installations from the VRM portal API",
+            "pl": "Reads data of Victron installations from the VRM portal API",
+            "uk": "Reads data of Victron installations from the VRM portal API",
+            "zh-cn": "Reads data of Victron installations from the VRM portal API"
+        },
+        "authors": [
+            "IggePop <mail@igge.org>"
+        ],
+        "keywords": [
+            "victron",
+            "vrm",
+            "energy",
+            "solar",
+            "battery",
+            "ess"
+        ],
+        "licenseInformation": {
+            "type": "free",
+            "license": "MIT"
+        },
+        "platform": "Javascript/Node.js",
+        "icon": "victron-vrm-api.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/IggePop/ioBroker.victron-vrm-api/main/admin/victron-vrm-api.png",
+        "readme": "https://github.com/IggePop/ioBroker.victron-vrm-api/blob/main/README.md",
+        "loglevel": "info",
+        "tier": 3,
+        "mode": "daemon",
+        "type": "energy",
+        "compact": true,
+        "connectionType": "cloud",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "json"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=6.0.11"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=7.0.23"
+            }
+        ],
+        "messagebox": true
+    },
+    "native": {
+        "token": "",
+        "sites": [],
+        "diagnosticsInterval": 1,
+        "staleMinutes": 30,
+        "phaseSums": true,
+        "requestTimeout": 30
+    },
+    "encryptedNative": [
+        "token"
+    ],
+    "protectedNative": [
+        "token"
+    ],
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Connected to VRM API",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
+}
