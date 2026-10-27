@@ -12,5 +12,8 @@
     "staleHelp": "Setzt info.dataStale, wenn VRM so lange keine neuen Daten vom GX-Gerät erhalten hat.",
     "Request timeout": "Timeout für Anfragen",
     "Calculate phase sums": "Phasensummen berechnen",
-    "phaseSumsHelp": "Legt für Leistung, Strom und Energie mit Werten für L1, L2 und L3 zusätzlich einen Summenwert im Unterordner „sum“ des Geräts an."
+    "phaseSumsHelp": "Legt für Leistung, Strom und Energie mit Werten für L1, L2 und L3 zusätzlich einen Summenwert im Unterordner „sum“ des Geräts an.",
+    "Read energy statistics": "Energiestatistik abrufen",
+    "energyStatsHelp": "PV-Ertrag, Verbrauch, Netzbezug/-einspeisung und Batterie geladen/entladen für heute, Woche, Monat und Jahr (eine Anfrage pro Anlage).",
+    "Energy statistics interval": "Intervall Energiestatistik"
 }

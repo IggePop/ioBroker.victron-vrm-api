@@ -4,7 +4,8 @@ import type { StateDef } from "./mappers/diagnostics";
  * Creates objects lazily (once per adapter run) and writes values only when they changed.
  */
 export class StateManager {
-    private readonly known = new Set<string>();
+    /** Created objects and their last written name; a changed name updates the object again */
+    private readonly known = new Map<string, string>();
 
     public constructor(private readonly adapter: ioBroker.Adapter) {}
 
@@ -48,11 +49,12 @@ export class StateManager {
     }
 
     private async ensureObject(id: string, obj: ioBroker.SettableObject): Promise<void> {
-        if (this.known.has(id)) {
+        const name = JSON.stringify(obj.common?.name);
+        if (this.known.get(id) === name) {
             return;
         }
         // extendObject keeps user changes (e.g. custom settings) and updates name/unit/role
         await this.adapter.extendObjectAsync(id, obj);
-        this.known.add(id);
+        this.known.set(id, name);
     }
 }

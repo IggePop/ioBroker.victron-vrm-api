@@ -12,5 +12,8 @@
     "staleHelp": "Sets info.dataStale when VRM has received no new data from the GX device for this time.",
     "Request timeout": "Request timeout",
     "Calculate phase sums": "Calculate phase sums",
-    "phaseSumsHelp": "Creates an additional total for power, current and energy values reported per phase (L1, L2, L3) in the \"sum\" folder of the device."
+    "phaseSumsHelp": "Creates an additional total for power, current and energy values reported per phase (L1, L2, L3) in the \"sum\" folder of the device.",
+    "Read energy statistics": "Read energy statistics",
+    "energyStatsHelp": "PV yield, consumption, grid import/export and battery charged/discharged for today, week, month and year (one request per installation).",
+    "Energy statistics interval": "Energy statistics interval"
 }

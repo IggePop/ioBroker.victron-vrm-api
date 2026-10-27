@@ -53,3 +53,41 @@ export interface VrmDiagnosticsResponse {
     records: VrmDiagnosticRecord[];
     num_records?: number;
 }
+
+export interface VrmOverviewDevice {
+    /** Device type, same as "Device" in the diagnostics, e.g. "PV Inverter" */
+    name: string;
+    customName?: string | null;
+    productName?: string;
+    productCode?: string;
+    firmwareVersion?: string;
+    /** Unix timestamp in seconds, false if unknown */
+    lastConnection?: number | string | false;
+    /** Missing for the gateway */
+    instance?: number;
+    /** Gateway only: expected seconds between logs */
+    loggingInterval?: number | false;
+    /** Gateway only: unix timestamp in seconds */
+    lastPowerUpOrRestart?: number | string | false;
+    /** Model of Fronius inverters, e.g. "Fronius Symo 5.0-3-M" */
+    froniusDeviceType?: string;
+}
+
+export interface VrmSystemOverviewResponse {
+    success: boolean;
+    records: {
+        devices: VrmOverviewDevice[];
+    };
+}
+
+export interface VrmStatsTimeframe {
+    /** kWh per attribute code, false if there is no data */
+    totals: Record<string, number | false | null>;
+    percentages?: Record<string, number>;
+}
+
+export interface VrmOverallStatsResponse {
+    success: boolean;
+    /** Keys: "today", "week", "month", "year" */
+    records: Record<string, VrmStatsTimeframe>;
+}

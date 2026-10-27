@@ -25,7 +25,8 @@ class StateManager {
   constructor(adapter) {
     this.adapter = adapter;
   }
-  known = /* @__PURE__ */ new Set();
+  /** Created objects and their last written name; a changed name updates the object again */
+  known = /* @__PURE__ */ new Map();
   async ensureDevice(id, name, native = {}) {
     await this.ensureObject(id, { type: "device", common: { name }, native });
   }
@@ -59,11 +60,13 @@ class StateManager {
     await this.setState("", { id, common, value });
   }
   async ensureObject(id, obj) {
-    if (this.known.has(id)) {
+    var _a;
+    const name = JSON.stringify((_a = obj.common) == null ? void 0 : _a.name);
+    if (this.known.get(id) === name) {
       return;
     }
     await this.adapter.extendObjectAsync(id, obj);
-    this.known.add(id);
+    this.known.set(id, name);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

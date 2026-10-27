@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var diagnostics_exports = {};
 __export(diagnostics_exports, {
   channelId: () => channelId,
+  deviceKey: () => deviceKey,
   guessRole: () => guessRole,
   mapDiagnostics: () => mapDiagnostics,
   parseUnit: () => parseUnit,
@@ -81,7 +82,10 @@ function convertValue(raw, type) {
   return String(raw);
 }
 function channelId(record) {
-  return `diagnostics.${sanitizeId(record.Device).toLowerCase()}_${record.instance}`;
+  return `diagnostics.${deviceKey(record.Device, record.instance)}`;
+}
+function deviceKey(device, instance) {
+  return `${sanitizeId(device).toLowerCase()}_${instance != null ? instance : 0}`;
 }
 function mapDiagnostics(records) {
   var _a, _b;
@@ -139,6 +143,7 @@ function mapDiagnostics(records) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   channelId,
+  deviceKey,
   guessRole,
   mapDiagnostics,
   parseUnit,

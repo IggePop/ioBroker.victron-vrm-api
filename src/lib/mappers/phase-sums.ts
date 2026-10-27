@@ -17,6 +17,8 @@ interface PhaseMember {
 /**
  * Detects the phase of a record. VRM names are inconsistent ("Grid L1", "L1 Energy",
  * "Input power 1"), so the D-Bus path (".../L1/...") is used as fallback.
+ *
+ * @param record
  */
 export function detectPhase(record: VrmDiagnosticRecord): number | undefined {
     const fromName = /\bL([123])\b/.exec(record.description ?? "");
@@ -27,7 +29,11 @@ export function detectPhase(record: VrmDiagnosticRecord): number | undefined {
     return fromPath ? Number(fromPath[1]) : undefined;
 }
 
-/** Detects power/current/energy by name, falling back to the unit (e.g. "Grid L1" in W) */
+/**
+ * Detects power/current/energy by name, falling back to the unit (e.g. "Grid L1" in W)
+ *
+ * @param record
+ */
 export function detectQuantity(record: VrmDiagnosticRecord): Quantity | undefined {
     const unit = parseUnit(record.formatWithUnit);
     const fromName = /\b(power|current|energy)\b/i.exec(record.description ?? "");
@@ -39,7 +45,11 @@ export function detectQuantity(record: VrmDiagnosticRecord): Quantity | undefine
     return (Object.keys(QUANTITY_UNITS) as Quantity[]).find(q => unit && QUANTITY_UNITS[q].units.includes(unit));
 }
 
-/** Removes the phase marker from a name: "Grid L1 - Power" → "Grid - Power", "Input power 1" → "Input power" */
+/**
+ * Removes the phase marker from a name: "Grid L1 - Power" → "Grid - Power", "Input power 1" → "Input power"
+ *
+ * @param name
+ */
 export function stripPhase(name: string): string {
     let result = name.replace(/\bL[123]\b/, " ");
     if (result === name) {
@@ -63,6 +73,8 @@ function toNumber(raw: VrmDiagnosticRecord["rawValue"]): number | undefined {
  * Builds sums over L1-L3 for power, current and energy values of the same device.
  * A sum is created when at least two phases of the same value exist.
  * The states are placed in a "sum" channel below the device, e.g. "diagnostics.grid_meter_40.sum.Grid_Power".
+ *
+ * @param records
  */
 export function mapPhaseSums(records: VrmDiagnosticRecord[]): StateDef[] {
     const groups = new Map<string, { channel: string; quantity: Quantity; unit?: string; members: PhaseMember[] }>();

@@ -23,7 +23,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_diagnostics = require("./lib/mappers/diagnostics");
+var import_energy = require("./lib/mappers/energy");
 var import_live = require("./lib/mappers/live");
+var import_overview = require("./lib/mappers/overview");
 var import_phase_sums = require("./lib/mappers/phase-sums");
 var import_poller = require("./lib/poller");
 var import_state_manager = require("./lib/state-manager");
@@ -31,6 +33,7 @@ var import_vrm_client = require("./lib/vrm-client");
 const MINUTE = 6e4;
 const INIT_RETRY_DELAY = MINUTE;
 const INIT_MAX_RETRY_DELAY = 15 * MINUTE;
+const OVERVIEW_INTERVAL = 60 * MINUTE;
 function clamp(value, min, max, fallback) {
   const num = Number(value);
   if (!Number.isFinite(num)) {
@@ -46,10 +49,15 @@ class VictronVrmApi extends utils.Adapter {
   states;
   installations = [];
   diagnosticsPoller;
+  overviewPoller;
+  energyPoller;
+  /** Display names of the diagnostics channels per installation, from the system overview */
+  deviceLabels = /* @__PURE__ */ new Map();
   initTimer;
   initFailures = 0;
   /** Last error message per installation, used to avoid log spam */
   siteErrors = /* @__PURE__ */ new Map();
+  energyErrors = /* @__PURE__ */ new Map();
   constructor(options = {}) {
     super({
       ...options,
@@ -106,7 +114,7 @@ class VictronVrmApi extends utils.Adapter {
       }
       await this.setState("info.connection", true, true);
       this.initFailures = 0;
-      this.startPolling();
+      await this.startPolling();
     } catch (error) {
       await this.setState("info.connection", false, true);
       if (error instanceof import_vrm_client.VrmApiError && error.isAuthError) {
@@ -152,7 +160,17 @@ class VictronVrmApi extends utils.Adapter {
       role: "text"
     });
   }
-  startPolling() {
+  async startPolling() {
+    await this.pollOverview();
+    this.overviewPoller = new import_poller.Poller({ interval: OVERVIEW_INTERVAL, run: () => this.pollOverview() });
+    this.overviewPoller.start(OVERVIEW_INTERVAL);
+    if (this.config.energyStats !== false) {
+      this.energyPoller = new import_poller.Poller({
+        interval: clamp(this.config.energyInterval, 1, 1440, 15) * MINUTE,
+        run: () => this.pollEnergy()
+      });
+      this.energyPoller.start();
+    }
     const interval = clamp(this.config.diagnosticsInterval, 1, 1440, 1) * MINUTE;
     this.diagnosticsPoller = new import_poller.Poller({
       interval,
@@ -164,8 +182,10 @@ class VictronVrmApi extends utils.Adapter {
     this.diagnosticsPoller.start();
   }
   stopPolling() {
-    var _a;
+    var _a, _b, _c;
     (_a = this.diagnosticsPoller) == null ? void 0 : _a.stop();
+    (_b = this.overviewPoller) == null ? void 0 : _b.stop();
+    (_c = this.energyPoller) == null ? void 0 : _c.stop();
   }
   /**
    * Fetches the diagnostics of all installations.
@@ -207,23 +227,92 @@ class VictronVrmApi extends utils.Adapter {
       throw firstError;
     }
   }
-  logSiteError(site, error) {
+  /**
+   * Fetches the device list of all installations. Errors are only logged,
+   * the device list is not essential for the diagnostics.
+   */
+  async pollOverview() {
+    if (!this.client) {
+      return;
+    }
+    for (const site of this.installations) {
+      try {
+        const devices = await this.client.getSystemOverview(site.idSite);
+        await this.processOverview(site, devices);
+      } catch (error) {
+        this.log.warn(
+          `Installation ${site.name} (${site.idSite}): reading the device list failed: ${errorMessage(error)}`
+        );
+      }
+    }
+  }
+  async processOverview(site, devices) {
+    const prefix = String(site.idSite);
+    const mapped = (0, import_overview.mapOverview)(devices);
+    this.deviceLabels.set(site.idSite, mapped.labels);
+    await this.states.ensureChannel(`${prefix}.devices`, "Devices");
+    for (const channel of mapped.channels) {
+      await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+    }
+    for (const state of mapped.states) {
+      await this.states.setState(prefix, state);
+    }
+  }
+  /**
+   * Fetches the energy totals (today, week, month, year) of all installations.
+   * Errors are logged once per installation, the diagnostics are not affected.
+   */
+  async pollEnergy() {
+    if (!this.client) {
+      return;
+    }
+    for (const site of this.installations) {
+      try {
+        const records = await this.client.getOverallStats(site.idSite, import_energy.ENERGY_CODES);
+        await this.processEnergy(site, records);
+        if (this.energyErrors.delete(site.idSite)) {
+          this.log.info(`Installation ${site.name} (${site.idSite}): energy statistics available again`);
+        }
+      } catch (error) {
+        this.logSiteError(site, error, this.energyErrors, "reading energy statistics failed: ");
+      }
+    }
+  }
+  async processEnergy(site, records) {
+    const prefix = String(site.idSite);
+    const mapped = (0, import_energy.mapEnergy)(records);
+    if (!mapped.states.length) {
+      this.log.debug(
+        `Installation ${site.name} (${site.idSite}): no energy statistics (${Object.keys(import_energy.ENERGY_PERIODS).join(", ")})`
+      );
+      return;
+    }
+    await this.states.ensureChannel(`${prefix}.energy`, "Energy statistics (kWh)");
+    for (const channel of mapped.channels) {
+      await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+    }
+    for (const state of mapped.states) {
+      await this.states.setState(prefix, state);
+    }
+  }
+  logSiteError(site, error, errors = this.siteErrors, context = "") {
     const message = errorMessage(error);
-    const text = `Installation ${site.name} (${site.idSite}): ${message}`;
-    if (this.siteErrors.get(site.idSite) === message) {
+    const text = `Installation ${site.name} (${site.idSite}): ${context}${message}`;
+    if (errors.get(site.idSite) === message) {
       this.log.debug(text);
     } else {
       this.log.warn(text);
     }
-    this.siteErrors.set(site.idSite, message);
+    errors.set(site.idSite, message);
   }
   async processDiagnostics(site, records) {
-    var _a;
+    var _a, _b;
     const prefix = String(site.idSite);
     const mapped = (0, import_diagnostics.mapDiagnostics)(records);
     await this.states.ensureChannel(`${prefix}.diagnostics`, "Diagnostics (all values reported by VRM)");
+    const labels = this.deviceLabels.get(site.idSite);
     for (const channel of mapped.channels) {
-      await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+      await this.states.ensureChannel(`${prefix}.${channel.id}`, (_a = labels == null ? void 0 : labels.get(channel.id)) != null ? _a : channel.name);
     }
     for (const state of mapped.states) {
       await this.states.setState(prefix, state);
@@ -244,7 +333,7 @@ class VictronVrmApi extends utils.Adapter {
         await this.states.setState(prefix, state);
       }
     }
-    const lastTimestamp = (_a = mapped.lastTimestamp) != null ? _a : site.last_timestamp ? site.last_timestamp * 1e3 : null;
+    const lastTimestamp = (_b = mapped.lastTimestamp) != null ? _b : site.last_timestamp ? site.last_timestamp * 1e3 : null;
     await this.states.setValue(`${prefix}.info.lastTimestamp`, lastTimestamp, {
       name: "Timestamp of the newest data in VRM",
       type: "number",

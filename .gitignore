@@ -21,3 +21,4 @@ build/**/*.map
 
 # local secrets
 .env
+TODO.md

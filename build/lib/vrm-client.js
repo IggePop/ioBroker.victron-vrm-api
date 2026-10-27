@@ -26,6 +26,11 @@ module.exports = __toCommonJS(vrm_client_exports);
 var import_request_queue = require("./request-queue");
 const VRM_BASE_URL = "https://vrmapi.victronenergy.com/v2";
 class VrmApiError extends Error {
+  /**
+   * @param message - Error text including the request path
+   * @param status - HTTP status
+   * @param retryAfter - Seconds from the Retry-After header
+   */
   constructor(message, status, retryAfter) {
     super(message);
     this.status = status;
@@ -36,11 +41,16 @@ class VrmApiError extends Error {
   get isAuthError() {
     return this.status === 401 || this.status === 403;
   }
+  /** HTTP 429 - too many requests */
   get isRateLimit() {
     return this.status === 429;
   }
 }
 class VrmClient {
+  /**
+   * @param token - VRM access token
+   * @param options - Base URL, timeout and request queue
+   */
   constructor(token, options = {}) {
     this.token = token;
     var _a, _b, _c;
@@ -52,21 +62,56 @@ class VrmClient {
   timeout;
   queue;
   controllers = /* @__PURE__ */ new Set();
+  /** The user the token belongs to */
   async getMe() {
     const res = await this.get("/users/me");
     return res.user;
   }
+  /**
+   * All installations the user has access to
+   *
+   * @param idUser - User id from {@link getMe}
+   */
   async getInstallations(idUser) {
     var _a;
     const res = await this.get(`/users/${idUser}/installations`);
     return (_a = res.records) != null ? _a : [];
   }
+  /**
+   * Latest values of all data attributes of an installation
+   *
+   * @param idSite - Installation id
+   */
   async getDiagnostics(idSite) {
     var _a;
     const res = await this.get(`/installations/${idSite}/diagnostics`, {
       count: "1000"
     });
     return (_a = res.records) != null ? _a : [];
+  }
+  /**
+   * Energy totals for today, week, month and year
+   *
+   * @param idSite - Installation id
+   * @param attributeCodes - VRM attribute codes, e.g. "Pc" (PV to consumers)
+   */
+  async getOverallStats(idSite, attributeCodes) {
+    var _a;
+    const res = await this.get(`/installations/${idSite}/overallstats`, {
+      type: "custom",
+      "attributeCodes[]": attributeCodes
+    });
+    return (_a = res.records) != null ? _a : {};
+  }
+  /**
+   * Devices of an installation with product name and firmware
+   *
+   * @param idSite - Installation id
+   */
+  async getSystemOverview(idSite) {
+    var _a, _b;
+    const res = await this.get(`/installations/${idSite}/system-overview`);
+    return (_b = (_a = res.records) == null ? void 0 : _a.devices) != null ? _b : [];
   }
   /**
    * Generic GET request, `path` is relative to the base URL
@@ -77,7 +122,9 @@ class VrmClient {
   get(path, params) {
     const url = new URL(this.baseUrl + (path.startsWith("/") ? path : `/${path}`));
     for (const [key, value] of Object.entries(params != null ? params : {})) {
-      url.searchParams.set(key, value);
+      for (const item of Array.isArray(value) ? value : [value]) {
+        url.searchParams.append(key, item);
+      }
     }
     return this.queue.add(() => this.request(url));
   }

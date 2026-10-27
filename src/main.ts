@@ -4,7 +4,9 @@
 
 import * as utils from "@iobroker/adapter-core";
 import { mapDiagnostics } from "./lib/mappers/diagnostics";
+import { ENERGY_CODES, ENERGY_PERIODS, mapEnergy } from "./lib/mappers/energy";
 import { mapLive } from "./lib/mappers/live";
+import { mapOverview } from "./lib/mappers/overview";
 import { mapPhaseSums } from "./lib/mappers/phase-sums";
 import { Poller } from "./lib/poller";
 import { StateManager } from "./lib/state-manager";
@@ -15,6 +17,8 @@ const MINUTE = 60_000;
 /** Delay before retrying the initialization after a (non-auth) failure */
 const INIT_RETRY_DELAY = MINUTE;
 const INIT_MAX_RETRY_DELAY = 15 * MINUTE;
+/** Device list and names change rarely */
+const OVERVIEW_INTERVAL = 60 * MINUTE;
 
 function clamp(value: unknown, min: number, max: number, fallback: number): number {
     const num = Number(value);
@@ -33,10 +37,15 @@ class VictronVrmApi extends utils.Adapter {
     private states!: StateManager;
     private installations: VrmInstallation[] = [];
     private diagnosticsPoller: Poller | undefined;
+    private overviewPoller: Poller | undefined;
+    private energyPoller: Poller | undefined;
+    /** Display names of the diagnostics channels per installation, from the system overview */
+    private deviceLabels = new Map<number, Map<string, string>>();
     private initTimer: ioBroker.Timeout | undefined;
     private initFailures = 0;
     /** Last error message per installation, used to avoid log spam */
     private siteErrors = new Map<number, string>();
+    private energyErrors = new Map<number, string>();
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -103,7 +112,7 @@ class VictronVrmApi extends utils.Adapter {
 
             await this.setState("info.connection", true, true);
             this.initFailures = 0;
-            this.startPolling();
+            await this.startPolling();
         } catch (error) {
             await this.setState("info.connection", false, true);
             if (error instanceof VrmApiError && error.isAuthError) {
@@ -150,7 +159,21 @@ class VictronVrmApi extends utils.Adapter {
         });
     }
 
-    private startPolling(): void {
+    private async startPolling(): Promise<void> {
+        // read the device names first, so the diagnostics channels get them right away
+        await this.pollOverview();
+        this.overviewPoller = new Poller({ interval: OVERVIEW_INTERVAL, run: () => this.pollOverview() });
+        this.overviewPoller.start(OVERVIEW_INTERVAL);
+
+        // default on, also for instances created before the option existed
+        if (this.config.energyStats !== false) {
+            this.energyPoller = new Poller({
+                interval: clamp(this.config.energyInterval, 1, 1440, 15) * MINUTE,
+                run: () => this.pollEnergy(),
+            });
+            this.energyPoller.start();
+        }
+
         const interval = clamp(this.config.diagnosticsInterval, 1, 1440, 1) * MINUTE;
         this.diagnosticsPoller = new Poller({
             interval,
@@ -165,6 +188,8 @@ class VictronVrmApi extends utils.Adapter {
 
     private stopPolling(): void {
         this.diagnosticsPoller?.stop();
+        this.overviewPoller?.stop();
+        this.energyPoller?.stop();
     }
 
     /**
@@ -211,16 +236,89 @@ class VictronVrmApi extends utils.Adapter {
         }
     }
 
-    private logSiteError(site: VrmInstallation, error: unknown): void {
+    /**
+     * Fetches the device list of all installations. Errors are only logged,
+     * the device list is not essential for the diagnostics.
+     */
+    private async pollOverview(): Promise<void> {
+        if (!this.client) {
+            return;
+        }
+        for (const site of this.installations) {
+            try {
+                const devices = await this.client.getSystemOverview(site.idSite);
+                await this.processOverview(site, devices);
+            } catch (error) {
+                this.log.warn(
+                    `Installation ${site.name} (${site.idSite}): reading the device list failed: ${errorMessage(error)}`,
+                );
+            }
+        }
+    }
+
+    private async processOverview(site: VrmInstallation, devices: Parameters<typeof mapOverview>[0]): Promise<void> {
+        const prefix = String(site.idSite);
+        const mapped = mapOverview(devices);
+        this.deviceLabels.set(site.idSite, mapped.labels);
+
+        await this.states.ensureChannel(`${prefix}.devices`, "Devices");
+        for (const channel of mapped.channels) {
+            await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+        }
+        for (const state of mapped.states) {
+            await this.states.setState(prefix, state);
+        }
+    }
+
+    /**
+     * Fetches the energy totals (today, week, month, year) of all installations.
+     * Errors are logged once per installation, the diagnostics are not affected.
+     */
+    private async pollEnergy(): Promise<void> {
+        if (!this.client) {
+            return;
+        }
+        for (const site of this.installations) {
+            try {
+                const records = await this.client.getOverallStats(site.idSite, ENERGY_CODES);
+                await this.processEnergy(site, records);
+                if (this.energyErrors.delete(site.idSite)) {
+                    this.log.info(`Installation ${site.name} (${site.idSite}): energy statistics available again`);
+                }
+            } catch (error) {
+                this.logSiteError(site, error, this.energyErrors, "reading energy statistics failed: ");
+            }
+        }
+    }
+
+    private async processEnergy(site: VrmInstallation, records: Parameters<typeof mapEnergy>[0]): Promise<void> {
+        const prefix = String(site.idSite);
+        const mapped = mapEnergy(records);
+        if (!mapped.states.length) {
+            this.log.debug(
+                `Installation ${site.name} (${site.idSite}): no energy statistics (${Object.keys(ENERGY_PERIODS).join(", ")})`,
+            );
+            return;
+        }
+        await this.states.ensureChannel(`${prefix}.energy`, "Energy statistics (kWh)");
+        for (const channel of mapped.channels) {
+            await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+        }
+        for (const state of mapped.states) {
+            await this.states.setState(prefix, state);
+        }
+    }
+
+    private logSiteError(site: VrmInstallation, error: unknown, errors = this.siteErrors, context = ""): void {
         const message = errorMessage(error);
-        const text = `Installation ${site.name} (${site.idSite}): ${message}`;
+        const text = `Installation ${site.name} (${site.idSite}): ${context}${message}`;
         // log the first occurrence as warning, repetitions only as debug
-        if (this.siteErrors.get(site.idSite) === message) {
+        if (errors.get(site.idSite) === message) {
             this.log.debug(text);
         } else {
             this.log.warn(text);
         }
-        this.siteErrors.set(site.idSite, message);
+        errors.set(site.idSite, message);
     }
 
     private async processDiagnostics(
@@ -231,8 +329,9 @@ class VictronVrmApi extends utils.Adapter {
         const mapped = mapDiagnostics(records);
 
         await this.states.ensureChannel(`${prefix}.diagnostics`, "Diagnostics (all values reported by VRM)");
+        const labels = this.deviceLabels.get(site.idSite);
         for (const channel of mapped.channels) {
-            await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+            await this.states.ensureChannel(`${prefix}.${channel.id}`, labels?.get(channel.id) ?? channel.name);
         }
         for (const state of mapped.states) {
             await this.states.setState(prefix, state);

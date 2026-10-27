@@ -43,6 +43,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.19.43",
     "@types/sinon-chai": "^3.2.12",
+    "patch-package": "^8.0.1",
     "rimraf": "^6.1.3",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
@@ -72,7 +73,7 @@
     "lint": "eslint -c eslint.config.mjs .",
     "translate": "translate-adapter",
     "release": "release-script",
-    "dev-server": "dev-server"
+    "dev-server": "patch-package && dev-server"
   },
   "bugs": {
     "url": "https://github.com/IggePop/ioBroker.victron-vrm-api/issues"

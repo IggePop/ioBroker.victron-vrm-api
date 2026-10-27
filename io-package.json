@@ -89,6 +89,8 @@
         "token": "",
         "sites": [],
         "diagnosticsInterval": 1,
+        "energyStats": true,
+        "energyInterval": 15,
         "staleMinutes": 30,
         "phaseSums": true,
         "requestTimeout": 30

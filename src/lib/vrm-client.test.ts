@@ -47,6 +47,14 @@ describe("VrmClient", () => {
         expect(lastUrl).to.equal("/installations/1/diagnostics?count=1000");
     });
 
+    it("repeats array parameters", async () => {
+        const client = new VrmClient("secret", { baseUrl, queue: new RequestQueue(0) });
+        await client.getOverallStats(1, ["Pc", "Pb"]).catch(() => undefined);
+        expect(decodeURIComponent(lastUrl)).to.equal(
+            "/installations/1/overallstats?type=custom&attributeCodes[]=Pc&attributeCodes[]=Pb",
+        );
+    });
+
     it("reports authentication errors", async () => {
         const client = new VrmClient("wrong", { baseUrl, queue: new RequestQueue(0) });
         const error = (await client.getMe().catch(e => e)) as VrmApiError;

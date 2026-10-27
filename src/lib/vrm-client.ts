@@ -3,6 +3,9 @@ import type {
     VrmDiagnosticsResponse,
     VrmInstallation,
     VrmInstallationsResponse,
+    VrmOverallStatsResponse,
+    VrmOverviewDevice,
+    VrmSystemOverviewResponse,
     VrmUserResponse,
 } from "./types";
 import { RequestQueue } from "./request-queue";
@@ -11,6 +14,11 @@ export const VRM_BASE_URL = "https://vrmapi.victronenergy.com/v2";
 
 /** Thrown for every non-successful VRM response or network failure */
 export class VrmApiError extends Error {
+    /**
+     * @param message - Error text including the request path
+     * @param status - HTTP status
+     * @param retryAfter - Seconds from the Retry-After header
+     */
     public constructor(
         message: string,
         /** HTTP status, undefined for network errors and timeouts */
@@ -27,12 +35,15 @@ export class VrmApiError extends Error {
         return this.status === 401 || this.status === 403;
     }
 
+    /** HTTP 429 - too many requests */
     public get isRateLimit(): boolean {
         return this.status === 429;
     }
 }
 
+/** Options for {@link VrmClient} */
 export interface VrmClientOptions {
+    /** API base URL, defaults to {@link VRM_BASE_URL} */
     baseUrl?: string;
     /** Request timeout in milliseconds */
     timeout?: number;
@@ -50,6 +61,10 @@ export class VrmClient {
     private readonly queue: RequestQueue;
     private readonly controllers = new Set<AbortController>();
 
+    /**
+     * @param token - VRM access token
+     * @param options - Base URL, timeout and request queue
+     */
     public constructor(
         private readonly token: string,
         options: VrmClientOptions = {},
@@ -59,16 +74,27 @@ export class VrmClient {
         this.queue = options.queue ?? new RequestQueue();
     }
 
+    /** The user the token belongs to */
     public async getMe(): Promise<VrmUserResponse["user"]> {
         const res = await this.get<VrmUserResponse>("/users/me");
         return res.user;
     }
 
+    /**
+     * All installations the user has access to
+     *
+     * @param idUser - User id from {@link getMe}
+     */
     public async getInstallations(idUser: number): Promise<VrmInstallation[]> {
         const res = await this.get<VrmInstallationsResponse>(`/users/${idUser}/installations`);
         return res.records ?? [];
     }
 
+    /**
+     * Latest values of all data attributes of an installation
+     *
+     * @param idSite - Installation id
+     */
     public async getDiagnostics(idSite: number): Promise<VrmDiagnosticRecord[]> {
         const res = await this.get<VrmDiagnosticsResponse>(`/installations/${idSite}/diagnostics`, {
             count: "1000",
@@ -77,15 +103,45 @@ export class VrmClient {
     }
 
     /**
+     * Energy totals for today, week, month and year
+     *
+     * @param idSite - Installation id
+     * @param attributeCodes - VRM attribute codes, e.g. "Pc" (PV to consumers)
+     */
+    public async getOverallStats(
+        idSite: number,
+        attributeCodes: string[],
+    ): Promise<VrmOverallStatsResponse["records"]> {
+        const res = await this.get<VrmOverallStatsResponse>(`/installations/${idSite}/overallstats`, {
+            type: "custom",
+            "attributeCodes[]": attributeCodes,
+        });
+        return res.records ?? {};
+    }
+
+    /**
+     * Devices of an installation with product name and firmware
+     *
+     * @param idSite - Installation id
+     */
+    public async getSystemOverview(idSite: number): Promise<VrmOverviewDevice[]> {
+        const res = await this.get<VrmSystemOverviewResponse>(`/installations/${idSite}/system-overview`);
+        return res.records?.devices ?? [];
+    }
+
+    /**
      * Generic GET request, `path` is relative to the base URL
      *
      * @param path
      * @param params
      */
-    public get<T>(path: string, params?: Record<string, string>): Promise<T> {
+    public get<T>(path: string, params?: Record<string, string | string[]>): Promise<T> {
         const url = new URL(this.baseUrl + (path.startsWith("/") ? path : `/${path}`));
         for (const [key, value] of Object.entries(params ?? {})) {
-            url.searchParams.set(key, value);
+            // arrays become repeated parameters, e.g. attributeCodes[]=Pc&attributeCodes[]=Pb
+            for (const item of Array.isArray(value) ? value : [value]) {
+                url.searchParams.append(key, item);
+            }
         }
         return this.queue.add(() => this.request<T>(url));
     }

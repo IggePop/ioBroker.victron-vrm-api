@@ -117,7 +117,17 @@ function convertValue(raw: VrmDiagnosticRecord["rawValue"], type: ioBroker.Commo
  * @param record
  */
 export function channelId(record: Pick<VrmDiagnosticRecord, "Device" | "instance">): string {
-    return `diagnostics.${sanitizeId(record.Device).toLowerCase()}_${record.instance}`;
+    return `diagnostics.${deviceKey(record.Device, record.instance)}`;
+}
+
+/**
+ * Stable id part of a device, e.g. "pv_inverter_20"
+ *
+ * @param device - Device type as reported by VRM
+ * @param instance - Device instance, the gateway has none
+ */
+export function deviceKey(device: string, instance: number | undefined): string {
+    return `${sanitizeId(device).toLowerCase()}_${instance ?? 0}`;
 }
 
 /**

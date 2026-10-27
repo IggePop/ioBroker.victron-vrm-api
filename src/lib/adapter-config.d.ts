@@ -12,6 +12,10 @@ declare global {
             diagnosticsInterval: number;
             /** Minutes without new data after which an installation is flagged as stale */
             staleMinutes: number;
+            /** Read energy totals (today, week, month, year) */
+            energyStats: boolean;
+            /** Polling interval for the energy totals in minutes */
+            energyInterval: number;
             /** Create sums over L1-L3 for power, current and energy values */
             phaseSums: boolean;
             /** HTTP request timeout in seconds */
