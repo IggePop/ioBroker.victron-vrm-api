@@ -38,6 +38,12 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 - Shows whether the data in VRM is still fresh (`info.dataStale`).
 - Sends requests one after another, honours the VRM rate limit (HTTP 429) and backs off when errors occur.
 
+## Requirements
+
+- Node.js 22 or newer
+- js-controller 6.0.11 or newer, admin 7.0.23 or newer
+- A VRM account with access to the installations and an access token
+
 ## Configuration
 
 1. Create an access token in VRM: **Preferences → Integrations → Access tokens**.

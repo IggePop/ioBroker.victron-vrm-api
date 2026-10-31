@@ -10,6 +10,20 @@ updates:
     assignees:
       - IggePop
     versioning-strategy: increase
+    ignore:
+      # TypeScript 7 (native compiler) is not supported by build-adapter/ts-node yet
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # must match the minimum supported Node.js version (engines)
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # @iobroker/testing ships chai 4, newer majors describe chai 5
+      - dependency-name: "@types/chai"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/chai-as-promised"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/sinon-chai"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
