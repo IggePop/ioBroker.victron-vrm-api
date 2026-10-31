@@ -30,6 +30,8 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 - Provides energy totals for today, week, month and year: PV yield, consumption, grid import and export,
   battery charged and discharged, plus the individual energy flows (e.g. PV to battery). One request per
   installation.
+- Provides the PV yield and consumption forecast for today (total and rest of the day) and tomorrow, plus the
+  hourly forecast as JSON.
 - Optionally adds sums over L1–L3 for power, current and energy values.
 - Uses the time at which VRM logged each value as the state timestamp, so history adapters (History, InfluxDB,
   SQL) store the real point in time, not the time of the poll.
@@ -51,6 +53,8 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 | Mark data as stale after | 30 min | Sets `info.dataStale` when VRM has received no new data for this time |
 | Read energy statistics | on | Energy totals, see below |
 | Energy statistics interval | 15 min | How often the energy totals are fetched (1–1440 min) |
+| Read forecast | on | Forecast, see below |
+| Forecast interval | 60 min | How often the forecast is fetched from VRM (15–1440 min) |
 | Calculate phase sums | on | Creates totals over L1–L3, see below |
 | Request timeout | 30 s | HTTP timeout per request |
 
@@ -75,6 +79,7 @@ victron-vrm-api.0
    │     ├─ solarYield, consumption, gridImport, gridExport,
    │     │  batteryCharged, batteryDischarged (genset if present)
    │     └─ flows.*           pvToConsumers, pvToBattery, pvToGrid, gridToConsumers, …
+   ├─ forecast              solar…/consumption… Today, RemainingToday, Tomorrow, PowerNow; hourly (JSON)
    ├─ devices
    │  └─ <device>_<instance>  name, deviceType, customName, productName, productCode,
    │                          firmwareVersion, lastConnection, instance
@@ -123,6 +128,22 @@ periods as VRM defines them.
 The totals match those shown in VRM (solar yield, consumption, energy from and to the grid). Flows without any
 data, e.g. a generator that does not exist, are not created.
 
+### Forecast
+
+VRM calculates hourly forecasts for PV yield and consumption. The adapter provides them per installation. If VRM
+also reports heat pump or EV charger forecasts, they appear as `heatPump…` and `evCharger…`.
+
+| State | Unit | Description |
+|---|---|---|
+| `forecast.solarToday` / `consumptionToday` | kWh | Whole day today |
+| `forecast.solarRemainingToday` / `consumptionRemainingToday` | kWh | From now until midnight |
+| `forecast.solarTomorrow` / `consumptionTomorrow` | kWh | Whole day tomorrow |
+| `forecast.solarPowerNow` / `consumptionPowerNow` | W | Average power expected in the current hour |
+| `forecast.hourly` | JSON | `[{"ts": 1793530800000, "solar": 6302, "consumption": 2415}, …]` with Wh per hour for today and tomorrow |
+
+Days are counted in the time zone of the installation. The adapter fetches the forecast from VRM every hour, and
+recalculates the rest of today and the current hour from that data every 5 minutes.
+
 ### Phase sums
 
 For power, current and energy values that a device reports per phase, the adapter creates a total in the `sum`
@@ -141,7 +162,7 @@ The adapter detects the phase from the name or the D-Bus path, and the quantity 
 ## Planned
 
 - Alarms
-- Solar and consumption forecast, Dynamic ESS (read only)
+- Dynamic ESS (read only)
 
 ## Developer notes
 

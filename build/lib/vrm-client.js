@@ -104,6 +104,23 @@ class VrmClient {
     return (_a = res.records) != null ? _a : {};
   }
   /**
+   * Hourly solar yield and consumption forecast (Wh per hour)
+   *
+   * @param idSite - Installation id
+   * @param start - Start time in milliseconds
+   * @param end - End time in milliseconds
+   */
+  async getForecast(idSite, start, end) {
+    var _a;
+    const res = await this.get(`/installations/${idSite}/stats`, {
+      type: "forecast",
+      interval: "hours",
+      start: String(Math.floor(start / 1e3)),
+      end: String(Math.floor(end / 1e3))
+    });
+    return (_a = res.records) != null ? _a : {};
+  }
+  /**
    * Devices of an installation with product name and firmware
    *
    * @param idSite - Installation id

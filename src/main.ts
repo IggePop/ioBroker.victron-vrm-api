@@ -5,6 +5,7 @@
 import * as utils from "@iobroker/adapter-core";
 import { mapDiagnostics } from "./lib/mappers/diagnostics";
 import { ENERGY_CODES, ENERGY_PERIODS, mapEnergy } from "./lib/mappers/energy";
+import { forecastWindow, mapForecast } from "./lib/mappers/forecast";
 import { mapLive } from "./lib/mappers/live";
 import { mapOverview } from "./lib/mappers/overview";
 import { mapPhaseSums } from "./lib/mappers/phase-sums";
@@ -19,6 +20,8 @@ const INIT_RETRY_DELAY = MINUTE;
 const INIT_MAX_RETRY_DELAY = 15 * MINUTE;
 /** Device list and names change rarely */
 const OVERVIEW_INTERVAL = 60 * MINUTE;
+/** How often "rest of today" and "current hour" of the forecast are recalculated */
+const FORECAST_TICK = 5 * MINUTE;
 
 function clamp(value: unknown, min: number, max: number, fallback: number): number {
     const num = Number(value);
@@ -39,6 +42,9 @@ class VictronVrmApi extends utils.Adapter {
     private diagnosticsPoller: Poller | undefined;
     private overviewPoller: Poller | undefined;
     private energyPoller: Poller | undefined;
+    private forecastPoller: Poller | undefined;
+    /** Last forecast per installation and when it was fetched */
+    private forecastCache = new Map<number, { records: Parameters<typeof mapForecast>[0]; fetched: number }>();
     /** Display names of the diagnostics channels per installation, from the system overview */
     private deviceLabels = new Map<number, Map<string, string>>();
     private initTimer: ioBroker.Timeout | undefined;
@@ -46,6 +52,7 @@ class VictronVrmApi extends utils.Adapter {
     /** Last error message per installation, used to avoid log spam */
     private siteErrors = new Map<number, string>();
     private energyErrors = new Map<number, string>();
+    private forecastErrors = new Map<number, string>();
 
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
@@ -174,6 +181,12 @@ class VictronVrmApi extends utils.Adapter {
             this.energyPoller.start();
         }
 
+        if (this.config.forecast !== false) {
+            // ticks every few minutes to keep "rest of today" current; VRM is only asked once per forecastInterval
+            this.forecastPoller = new Poller({ interval: FORECAST_TICK, run: () => this.pollForecast() });
+            this.forecastPoller.start();
+        }
+
         const interval = clamp(this.config.diagnosticsInterval, 1, 1440, 1) * MINUTE;
         this.diagnosticsPoller = new Poller({
             interval,
@@ -190,6 +203,7 @@ class VictronVrmApi extends utils.Adapter {
         this.diagnosticsPoller?.stop();
         this.overviewPoller?.stop();
         this.energyPoller?.stop();
+        this.forecastPoller?.stop();
     }
 
     /**
@@ -288,6 +302,51 @@ class VictronVrmApi extends utils.Adapter {
             } catch (error) {
                 this.logSiteError(site, error, this.energyErrors, "reading energy statistics failed: ");
             }
+        }
+    }
+
+    /**
+     * Fetches the forecast when the cached one is older than the configured interval,
+     * then recalculates the time dependent values (rest of today, current hour) from the cache.
+     */
+    private async pollForecast(): Promise<void> {
+        if (!this.client) {
+            return;
+        }
+        const maxAge = clamp(this.config.forecastInterval, 15, 1440, 60) * MINUTE;
+        for (const site of this.installations) {
+            const now = Date.now();
+            let cached = this.forecastCache.get(site.idSite);
+            if (!cached || now - cached.fetched >= maxAge) {
+                try {
+                    const { start, end } = forecastWindow(now);
+                    cached = { records: await this.client.getForecast(site.idSite, start, end), fetched: now };
+                    this.forecastCache.set(site.idSite, cached);
+                    if (this.forecastErrors.delete(site.idSite)) {
+                        this.log.info(`Installation ${site.name} (${site.idSite}): forecast available again`);
+                    }
+                } catch (error) {
+                    this.logSiteError(site, error, this.forecastErrors, "reading the forecast failed: ");
+                }
+            }
+            if (cached) {
+                await this.processForecast(site, cached.records, now);
+            }
+        }
+    }
+
+    private async processForecast(
+        site: VrmInstallation,
+        records: Parameters<typeof mapForecast>[0],
+        now: number,
+    ): Promise<void> {
+        const prefix = String(site.idSite);
+        const mapped = mapForecast(records, now, site.timezone);
+        for (const channel of mapped.channels) {
+            await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+        }
+        for (const state of mapped.states) {
+            await this.states.setState(prefix, state);
         }
     }
 

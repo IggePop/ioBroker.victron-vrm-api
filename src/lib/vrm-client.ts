@@ -4,6 +4,7 @@ import type {
     VrmInstallation,
     VrmInstallationsResponse,
     VrmOverallStatsResponse,
+    VrmStatsResponse,
     VrmOverviewDevice,
     VrmSystemOverviewResponse,
     VrmUserResponse,
@@ -115,6 +116,23 @@ export class VrmClient {
         const res = await this.get<VrmOverallStatsResponse>(`/installations/${idSite}/overallstats`, {
             type: "custom",
             "attributeCodes[]": attributeCodes,
+        });
+        return res.records ?? {};
+    }
+
+    /**
+     * Hourly solar yield and consumption forecast (Wh per hour)
+     *
+     * @param idSite - Installation id
+     * @param start - Start time in milliseconds
+     * @param end - End time in milliseconds
+     */
+    public async getForecast(idSite: number, start: number, end: number): Promise<VrmStatsResponse["records"]> {
+        const res = await this.get<VrmStatsResponse>(`/installations/${idSite}/stats`, {
+            type: "forecast",
+            interval: "hours",
+            start: String(Math.floor(start / 1000)),
+            end: String(Math.floor(end / 1000)),
         });
         return res.records ?? {};
     }

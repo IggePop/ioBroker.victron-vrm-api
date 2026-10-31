@@ -16,6 +16,10 @@ declare global {
             energyStats: boolean;
             /** Polling interval for the energy totals in minutes */
             energyInterval: number;
+            /** Read the solar yield and consumption forecast */
+            forecast: boolean;
+            /** How often the forecast is fetched from VRM, in minutes */
+            forecastInterval: number;
             /** Create sums over L1-L3 for power, current and energy values */
             phaseSums: boolean;
             /** HTTP request timeout in seconds */

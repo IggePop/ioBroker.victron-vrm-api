@@ -24,6 +24,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_diagnostics = require("./lib/mappers/diagnostics");
 var import_energy = require("./lib/mappers/energy");
+var import_forecast = require("./lib/mappers/forecast");
 var import_live = require("./lib/mappers/live");
 var import_overview = require("./lib/mappers/overview");
 var import_phase_sums = require("./lib/mappers/phase-sums");
@@ -34,6 +35,7 @@ const MINUTE = 6e4;
 const INIT_RETRY_DELAY = MINUTE;
 const INIT_MAX_RETRY_DELAY = 15 * MINUTE;
 const OVERVIEW_INTERVAL = 60 * MINUTE;
+const FORECAST_TICK = 5 * MINUTE;
 function clamp(value, min, max, fallback) {
   const num = Number(value);
   if (!Number.isFinite(num)) {
@@ -51,6 +53,9 @@ class VictronVrmApi extends utils.Adapter {
   diagnosticsPoller;
   overviewPoller;
   energyPoller;
+  forecastPoller;
+  /** Last forecast per installation and when it was fetched */
+  forecastCache = /* @__PURE__ */ new Map();
   /** Display names of the diagnostics channels per installation, from the system overview */
   deviceLabels = /* @__PURE__ */ new Map();
   initTimer;
@@ -58,6 +63,7 @@ class VictronVrmApi extends utils.Adapter {
   /** Last error message per installation, used to avoid log spam */
   siteErrors = /* @__PURE__ */ new Map();
   energyErrors = /* @__PURE__ */ new Map();
+  forecastErrors = /* @__PURE__ */ new Map();
   constructor(options = {}) {
     super({
       ...options,
@@ -171,6 +177,10 @@ class VictronVrmApi extends utils.Adapter {
       });
       this.energyPoller.start();
     }
+    if (this.config.forecast !== false) {
+      this.forecastPoller = new import_poller.Poller({ interval: FORECAST_TICK, run: () => this.pollForecast() });
+      this.forecastPoller.start();
+    }
     const interval = clamp(this.config.diagnosticsInterval, 1, 1440, 1) * MINUTE;
     this.diagnosticsPoller = new import_poller.Poller({
       interval,
@@ -182,10 +192,11 @@ class VictronVrmApi extends utils.Adapter {
     this.diagnosticsPoller.start();
   }
   stopPolling() {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     (_a = this.diagnosticsPoller) == null ? void 0 : _a.stop();
     (_b = this.overviewPoller) == null ? void 0 : _b.stop();
     (_c = this.energyPoller) == null ? void 0 : _c.stop();
+    (_d = this.forecastPoller) == null ? void 0 : _d.stop();
   }
   /**
    * Fetches the diagnostics of all installations.
@@ -276,6 +287,45 @@ class VictronVrmApi extends utils.Adapter {
       } catch (error) {
         this.logSiteError(site, error, this.energyErrors, "reading energy statistics failed: ");
       }
+    }
+  }
+  /**
+   * Fetches the forecast when the cached one is older than the configured interval,
+   * then recalculates the time dependent values (rest of today, current hour) from the cache.
+   */
+  async pollForecast() {
+    if (!this.client) {
+      return;
+    }
+    const maxAge = clamp(this.config.forecastInterval, 15, 1440, 60) * MINUTE;
+    for (const site of this.installations) {
+      const now = Date.now();
+      let cached = this.forecastCache.get(site.idSite);
+      if (!cached || now - cached.fetched >= maxAge) {
+        try {
+          const { start, end } = (0, import_forecast.forecastWindow)(now);
+          cached = { records: await this.client.getForecast(site.idSite, start, end), fetched: now };
+          this.forecastCache.set(site.idSite, cached);
+          if (this.forecastErrors.delete(site.idSite)) {
+            this.log.info(`Installation ${site.name} (${site.idSite}): forecast available again`);
+          }
+        } catch (error) {
+          this.logSiteError(site, error, this.forecastErrors, "reading the forecast failed: ");
+        }
+      }
+      if (cached) {
+        await this.processForecast(site, cached.records, now);
+      }
+    }
+  }
+  async processForecast(site, records, now) {
+    const prefix = String(site.idSite);
+    const mapped = (0, import_forecast.mapForecast)(records, now, site.timezone);
+    for (const channel of mapped.channels) {
+      await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+    }
+    for (const state of mapped.states) {
+      await this.states.setState(prefix, state);
     }
   }
   async processEnergy(site, records) {

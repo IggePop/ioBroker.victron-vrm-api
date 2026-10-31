@@ -91,3 +91,13 @@ export interface VrmOverallStatsResponse {
     /** Keys: "today", "week", "month", "year" */
     records: Record<string, VrmStatsTimeframe>;
 }
+
+/** One data point of a stats series: [timestamp in ms, value] */
+export type VrmStatsPoint = [number, number | null];
+
+export interface VrmStatsResponse {
+    success: boolean;
+    /** Series per attribute code, false if the installation has no data for it */
+    records: Record<string, VrmStatsPoint[] | false>;
+    totals?: Record<string, number | false>;
+}
