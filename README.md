@@ -31,6 +31,8 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
   battery charged and discharged, plus the individual energy flows (e.g. PV to battery). One request per
   installation.
 - Optionally adds sums over L1–L3 for power, current and energy values.
+- Uses the time at which VRM logged each value as the state timestamp, so history adapters (History, InfluxDB,
+  SQL) store the real point in time, not the time of the poll.
 - Shows whether the data in VRM is still fresh (`info.dataStale`).
 - Sends requests one after another, honours the VRM rate limit (HTTP 429) and backs off when errors occur.
 

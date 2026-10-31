@@ -47,7 +47,7 @@ class StateManager {
       common: { read: true, write: false, ...def.common },
       native: (_a = def.native) != null ? _a : {}
     });
-    await this.adapter.setStateChangedAsync(id, { val: def.value, ack: true });
+    await this.adapter.setStateChangedAsync(id, { val: def.value, ack: true, ...def.ts ? { ts: def.ts } : {} });
   }
   /**
    * Shortcut for simple info states

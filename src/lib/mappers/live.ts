@@ -1,5 +1,5 @@
 import type { VrmDiagnosticRecord } from "../types";
-import type { StateDef } from "./diagnostics";
+import { newestTs, recordTs, type StateDef } from "./diagnostics";
 
 /** One way to obtain a value: all records matching service + one of the paths are summed up */
 interface LiveSource {
@@ -106,8 +106,15 @@ export const LIVE_DEFINITIONS: LiveDefinition[] = [
     },
 ];
 
-function sumSource(records: VrmDiagnosticRecord[], source: LiveSource): number | undefined {
+/**
+ * Sum of all matching records and the newest timestamp among them
+ *
+ * @param records - Diagnostics records
+ * @param source - Service and D-Bus paths to add up
+ */
+function sumSource(records: VrmDiagnosticRecord[], source: LiveSource): { sum: number; ts?: number } | undefined {
     let sum: number | undefined;
+    let ts: number | undefined;
     for (const record of records) {
         if (record.dbusServiceType !== source.service || !record.dbusPath || !source.paths.includes(record.dbusPath)) {
             continue;
@@ -117,8 +124,9 @@ function sumSource(records: VrmDiagnosticRecord[], source: LiveSource): number |
             continue;
         }
         sum = (sum ?? 0) + value;
+        ts = newestTs([ts, recordTs(record)]);
     }
-    return sum;
+    return sum === undefined ? undefined : { sum, ts };
 }
 
 /**
@@ -130,24 +138,25 @@ function sumSource(records: VrmDiagnosticRecord[], source: LiveSource): number |
  */
 export function mapLive(records: VrmDiagnosticRecord[]): StateDef[] {
     const result: StateDef[] = [];
-    const values: Record<string, number> = {};
+    const values: Record<string, { sum: number; ts?: number }> = {};
 
     for (const def of LIVE_DEFINITIONS) {
-        let value: number | undefined;
+        let found: { sum: number; ts?: number } | undefined;
         for (const source of def.sources) {
-            value = sumSource(records, source);
-            if (value !== undefined) {
+            found = sumSource(records, source);
+            if (found !== undefined) {
                 break;
             }
         }
-        if (value === undefined) {
+        if (found === undefined) {
             continue;
         }
-        values[def.id] = value;
+        values[def.id] = found;
         result.push({
             id: `live.${def.id}`,
             common: { name: def.name, type: "number", role: def.role, unit: def.unit, read: true, write: false },
-            value: Math.round(value * 100) / 100,
+            value: Math.round(found.sum * 100) / 100,
+            ts: found.ts,
         });
     }
 
@@ -162,7 +171,8 @@ export function mapLive(records: VrmDiagnosticRecord[]): StateDef[] {
                 read: true,
                 write: false,
             },
-            value: Math.round(((values.pvDcPower ?? 0) + (values.pvAcPower ?? 0)) * 100) / 100,
+            value: Math.round(((values.pvDcPower?.sum ?? 0) + (values.pvAcPower?.sum ?? 0)) * 100) / 100,
+            ts: newestTs([values.pvDcPower?.ts, values.pvAcPower?.ts]),
         });
     }
 

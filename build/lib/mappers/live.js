@@ -22,6 +22,7 @@ __export(live_exports, {
   mapLive: () => mapLive
 });
 module.exports = __toCommonJS(live_exports);
+var import_diagnostics = require("./diagnostics");
 const PHASES = ["L1", "L2", "L3"];
 const phasePaths = (prefix) => PHASES.map((phase) => `${prefix}/${phase}/Power`);
 const LIVE_DEFINITIONS = [
@@ -108,6 +109,7 @@ const LIVE_DEFINITIONS = [
 ];
 function sumSource(records, source) {
   let sum;
+  let ts;
   for (const record of records) {
     if (record.dbusServiceType !== source.service || !record.dbusPath || !source.paths.includes(record.dbusPath)) {
       continue;
@@ -117,29 +119,31 @@ function sumSource(records, source) {
       continue;
     }
     sum = (sum != null ? sum : 0) + value;
+    ts = (0, import_diagnostics.newestTs)([ts, (0, import_diagnostics.recordTs)(record)]);
   }
-  return sum;
+  return sum === void 0 ? void 0 : { sum, ts };
 }
 function mapLive(records) {
-  var _a, _b;
+  var _a, _b, _c, _d, _e, _f;
   const result = [];
   const values = {};
   for (const def of LIVE_DEFINITIONS) {
-    let value;
+    let found;
     for (const source of def.sources) {
-      value = sumSource(records, source);
-      if (value !== void 0) {
+      found = sumSource(records, source);
+      if (found !== void 0) {
         break;
       }
     }
-    if (value === void 0) {
+    if (found === void 0) {
       continue;
     }
-    values[def.id] = value;
+    values[def.id] = found;
     result.push({
       id: `live.${def.id}`,
       common: { name: def.name, type: "number", role: def.role, unit: def.unit, read: true, write: false },
-      value: Math.round(value * 100) / 100
+      value: Math.round(found.sum * 100) / 100,
+      ts: found.ts
     });
   }
   if (values.pvDcPower !== void 0 || values.pvAcPower !== void 0) {
@@ -153,7 +157,8 @@ function mapLive(records) {
         read: true,
         write: false
       },
-      value: Math.round((((_a = values.pvDcPower) != null ? _a : 0) + ((_b = values.pvAcPower) != null ? _b : 0)) * 100) / 100
+      value: Math.round((((_b = (_a = values.pvDcPower) == null ? void 0 : _a.sum) != null ? _b : 0) + ((_d = (_c = values.pvAcPower) == null ? void 0 : _c.sum) != null ? _d : 0)) * 100) / 100,
+      ts: (0, import_diagnostics.newestTs)([(_e = values.pvDcPower) == null ? void 0 : _e.ts, (_f = values.pvAcPower) == null ? void 0 : _f.ts])
     });
   }
   return result;

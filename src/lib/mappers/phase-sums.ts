@@ -1,5 +1,5 @@
 import type { VrmDiagnosticRecord } from "../types";
-import { channelId, parseUnit, type StateDef } from "./diagnostics";
+import { channelId, newestTs, parseUnit, recordTs, type StateDef } from "./diagnostics";
 
 type Quantity = "power" | "current" | "energy";
 
@@ -138,6 +138,7 @@ export function mapPhaseSums(records: VrmDiagnosticRecord[]): StateDef[] {
                 sources: group.members.map(m => m.record.code),
             },
             value: sum,
+            ts: newestTs(group.members.map(m => recordTs(m.record))),
         });
     }
 

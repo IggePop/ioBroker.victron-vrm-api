@@ -30,7 +30,8 @@ export class StateManager {
             common: { read: true, write: false, ...def.common },
             native: def.native ?? {},
         });
-        await this.adapter.setStateChangedAsync(id, { val: def.value, ack: true });
+        // ts = time of the measurement in VRM, so history adapters store the real point in time
+        await this.adapter.setStateChangedAsync(id, { val: def.value, ack: true, ...(def.ts ? { ts: def.ts } : {}) });
     }
 
     /**

@@ -51,6 +51,17 @@ describe("live mapper", () => {
         expect(values).to.include({ "live.pvDcPower": 1000, "live.pvAcPower": 500, "live.pvPower": 1500 });
     });
 
+    it("uses the newest timestamp of the summed values", () => {
+        const l1 = { ...record("system", "/Ac/Grid/L1/Power", 100), timestamp: 1_700_000_100 };
+        const l2 = { ...record("system", "/Ac/Grid/L2/Power", 50), timestamp: 1_700_000_000 };
+        const dc = { ...record("system", "/Dc/Pv/Power", 10), timestamp: 1_700_000_200 };
+        const ac = { ...record("system", "/Ac/PvOnGrid/L1/Power", 5), timestamp: 1_700_000_050 };
+        const states = mapLive([l1, l2, dc, ac]);
+        const ts = (id: string): number | undefined => states.find(s => s.id === id)?.ts;
+        expect(ts("live.gridPower")).to.equal(1_700_000_100_000);
+        expect(ts("live.pvPower")).to.equal(1_700_000_200_000);
+    });
+
     it("omits values that are not reported or null", () => {
         const values = valuesOf([record("system", "/Dc/Battery/Soc", null)]);
         expect(values).to.deep.equal({});

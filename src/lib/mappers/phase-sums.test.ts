@@ -100,6 +100,15 @@ describe("phase sums mapper", () => {
             ]);
         });
 
+        it("uses the newest timestamp of the phases", () => {
+            const l1 = record("PV Inverter", 20, "pP1", "L1 Power", "%.0F W", "/Ac/L1/Power", 100);
+            const l2 = {
+                ...record("PV Inverter", 20, "pP2", "L2 Power", "%.0F W", "/Ac/L2/Power", 100),
+                timestamp: 1_700_000_060,
+            };
+            expect(mapPhaseSums([l1, l2])[0].ts).to.equal(1_700_000_060_000);
+        });
+
         it("keeps devices apart and ignores single phases", () => {
             const sums = mapPhaseSums([
                 record("PV Inverter", 20, "pP1", "L1 Power", "%.0F W", "/Ac/L1/Power", 100),

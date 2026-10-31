@@ -12,6 +12,8 @@ export interface StateDef {
     common: Partial<ioBroker.StateCommon> & Pick<ioBroker.StateCommon, "name" | "type" | "role">;
     native?: Record<string, unknown>;
     value: ioBroker.StateValue;
+    /** Time of the value in milliseconds (from VRM); omitted = time of writing */
+    ts?: number;
 }
 
 export interface MappedDiagnostics {
@@ -19,6 +21,25 @@ export interface MappedDiagnostics {
     states: StateDef[];
     /** Newest record timestamp in milliseconds */
     lastTimestamp?: number;
+}
+
+/**
+ * Time at which VRM logged the value, in milliseconds; undefined if VRM sends none
+ *
+ * @param record - Diagnostics record
+ */
+export function recordTs(record: Pick<VrmDiagnosticRecord, "timestamp">): number | undefined {
+    return typeof record.timestamp === "number" && record.timestamp > 0 ? record.timestamp * 1000 : undefined;
+}
+
+/**
+ * Newest of several timestamps, undefined if none is known
+ *
+ * @param values - Timestamps in milliseconds
+ */
+export function newestTs(values: (number | undefined)[]): number | undefined {
+    const known = values.filter((v): v is number => v !== undefined);
+    return known.length ? Math.max(...known) : undefined;
 }
 
 /**
@@ -185,12 +206,10 @@ export function mapDiagnostics(records: VrmDiagnosticRecord[]): MappedDiagnostic
                 formatWithUnit: record.formatWithUnit,
             },
             value: convertValue(record.rawValue, type),
+            ts: recordTs(record),
         });
 
-        if (typeof record.timestamp === "number") {
-            const ts = record.timestamp * 1000;
-            lastTimestamp = lastTimestamp === undefined ? ts : Math.max(lastTimestamp, ts);
-        }
+        lastTimestamp = newestTs([lastTimestamp, recordTs(record)]);
     }
 
     return { channels: [...channels.values()], states, lastTimestamp };

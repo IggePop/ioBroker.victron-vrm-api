@@ -115,7 +115,8 @@ function mapPhaseSums(records) {
         phaseSum: true,
         sources: group.members.map((m) => m.record.code)
       },
-      value: sum
+      value: sum,
+      ts: (0, import_diagnostics.newestTs)(group.members.map((m) => (0, import_diagnostics.recordTs)(m.record)))
     });
   }
   return result;

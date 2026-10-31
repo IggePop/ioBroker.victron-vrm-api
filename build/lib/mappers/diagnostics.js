@@ -22,10 +22,19 @@ __export(diagnostics_exports, {
   deviceKey: () => deviceKey,
   guessRole: () => guessRole,
   mapDiagnostics: () => mapDiagnostics,
+  newestTs: () => newestTs,
   parseUnit: () => parseUnit,
+  recordTs: () => recordTs,
   sanitizeId: () => sanitizeId
 });
 module.exports = __toCommonJS(diagnostics_exports);
+function recordTs(record) {
+  return typeof record.timestamp === "number" && record.timestamp > 0 ? record.timestamp * 1e3 : void 0;
+}
+function newestTs(values) {
+  const known = values.filter((v) => v !== void 0);
+  return known.length ? Math.max(...known) : void 0;
+}
 function sanitizeId(value) {
   return String(value).trim().replace(/[^a-zA-Z0-9_-]+/g, "_").replace(/^_+|_+$/g, "") || "unknown";
 }
@@ -131,12 +140,10 @@ function mapDiagnostics(records) {
         dbusPath: record.dbusPath,
         formatWithUnit: record.formatWithUnit
       },
-      value: convertValue(record.rawValue, type)
+      value: convertValue(record.rawValue, type),
+      ts: recordTs(record)
     });
-    if (typeof record.timestamp === "number") {
-      const ts = record.timestamp * 1e3;
-      lastTimestamp = lastTimestamp === void 0 ? ts : Math.max(lastTimestamp, ts);
-    }
+    lastTimestamp = newestTs([lastTimestamp, recordTs(record)]);
   }
   return { channels: [...channels.values()], states, lastTimestamp };
 }
@@ -146,7 +153,9 @@ function mapDiagnostics(records) {
   deviceKey,
   guessRole,
   mapDiagnostics,
+  newestTs,
   parseUnit,
+  recordTs,
   sanitizeId
 });
 //# sourceMappingURL=diagnostics.js.map

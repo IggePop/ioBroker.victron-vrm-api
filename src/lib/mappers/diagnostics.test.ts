@@ -97,6 +97,16 @@ describe("diagnostics mapper", () => {
             expect(result.states[1].value).to.equal("v3.10");
         });
 
+        it("takes the timestamp of each value from VRM", () => {
+            const result = mapDiagnostics([
+                record({ code: "a", timestamp: 1_700_000_000 }),
+                record({ code: "b", timestamp: 1_600_000_000 }),
+                record({ code: "c", timestamp: null as unknown as number }),
+            ]);
+            expect(result.states.map(s => s.ts)).to.deep.equal([1_700_000_000_000, 1_600_000_000_000, undefined]);
+            expect(result.lastTimestamp).to.equal(1_700_000_000_000);
+        });
+
         it("makes duplicate codes unique and reports the newest timestamp", () => {
             const result = mapDiagnostics([
                 record({ timestamp: 100 }),
