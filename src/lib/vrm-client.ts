@@ -1,4 +1,6 @@
 import type {
+    VrmAlarmLogRecord,
+    VrmAlarmLogResponse,
     VrmDiagnosticRecord,
     VrmDiagnosticsResponse,
     VrmInstallation,
@@ -19,6 +21,7 @@ export class VrmApiError extends Error {
      * @param message - Error text including the request path
      * @param status - HTTP status
      * @param retryAfter - Seconds from the Retry-After header
+     * @param errorCode - error_code of the VRM response
      */
     public constructor(
         message: string,
@@ -26,6 +29,8 @@ export class VrmApiError extends Error {
         public readonly status?: number,
         /** Seconds to wait before the next request (HTTP 429) */
         public readonly retryAfter?: number,
+        /** "error_code" of the VRM response, e.g. "no_results_found" */
+        public readonly errorCode?: string,
     ) {
         super(message);
         this.name = "VrmApiError";
@@ -138,6 +143,27 @@ export class VrmClient {
     }
 
     /**
+     * Newest entries of the alarm log, active alarms first
+     *
+     * @param idSite - Installation id
+     * @param count - Maximum number of entries
+     */
+    public async getAlarmLog(idSite: number, count: number): Promise<VrmAlarmLogRecord[]> {
+        try {
+            const res = await this.get<VrmAlarmLogResponse>(`/installations/${idSite}/alarm-log`, {
+                count: String(count),
+            });
+            return res.records ?? [];
+        } catch (error) {
+            // an installation without any alarm in the log
+            if (error instanceof VrmApiError && error.errorCode === "no_results_found") {
+                return [];
+            }
+            throw error;
+        }
+    }
+
+    /**
      * Devices of an installation with product name and firmware
      *
      * @param idSite - Installation id
@@ -206,12 +232,18 @@ export class VrmClient {
                 `${url.pathname}: HTTP ${response.status} ${extractErrorText(body) ?? response.statusText}`,
                 response.status,
                 retryAfter,
+                extractErrorCode(body),
             );
         }
 
-        const data = (await response.json()) as T & { success?: boolean; errors?: unknown };
+        const data = (await response.json()) as T & { success?: boolean; errors?: unknown; error_code?: string };
         if (data.success === false) {
-            throw new VrmApiError(`${url.pathname}: ${JSON.stringify(data.errors ?? "request not successful")}`);
+            throw new VrmApiError(
+                `${url.pathname}: ${JSON.stringify(data.errors ?? "request not successful")}`,
+                undefined,
+                undefined,
+                data.error_code,
+            );
         }
         return data;
     }
@@ -224,6 +256,14 @@ function extractErrorText(body: string): string | undefined {
             return typeof json.errors === "string" ? json.errors : JSON.stringify(json.errors);
         }
         return json.error_code;
+    } catch {
+        return undefined;
+    }
+}
+
+function extractErrorCode(body: string): string | undefined {
+    try {
+        return (JSON.parse(body) as { error_code?: string }).error_code;
     } catch {
         return undefined;
     }

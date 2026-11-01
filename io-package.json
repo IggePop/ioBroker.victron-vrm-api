@@ -33,15 +33,15 @@
         "desc": {
             "en": "Reads data of Victron installations from the VRM portal API",
             "de": "Liest Daten von Victron-Anlagen über die VRM-Portal-API",
-            "ru": "Reads data of Victron installations from the VRM portal API",
-            "pt": "Reads data of Victron installations from the VRM portal API",
-            "nl": "Reads data of Victron installations from the VRM portal API",
-            "fr": "Reads data of Victron installations from the VRM portal API",
-            "it": "Reads data of Victron installations from the VRM portal API",
-            "es": "Reads data of Victron installations from the VRM portal API",
-            "pl": "Reads data of Victron installations from the VRM portal API",
-            "uk": "Reads data of Victron installations from the VRM portal API",
-            "zh-cn": "Reads data of Victron installations from the VRM portal API"
+            "ru": "Считывает данные установок Victron через API портала VRM",
+            "pt": "Lê dados de instalações Victron através da API do portal VRM",
+            "nl": "Leest gegevens van Victron-installaties via de API van het VRM-portaal",
+            "fr": "Lit les données des installations Victron via l'API du portail VRM",
+            "it": "Legge i dati degli impianti Victron tramite l'API del portale VRM",
+            "es": "Lee datos de instalaciones Victron a través de la API del portal VRM",
+            "pl": "Odczytuje dane instalacji Victron przez API portalu VRM",
+            "uk": "Зчитує дані установок Victron через API порталу VRM",
+            "zh-cn": "通过 VRM 门户 API 读取 Victron 系统的数据"
         },
         "authors": ["IggePop <mail@igge.org>"],
         "keywords": ["victron", "vrm", "energy", "solar", "battery", "ess"],
@@ -84,6 +84,8 @@
         "energyInterval": 15,
         "forecast": true,
         "forecastInterval": 60,
+        "alarms": true,
+        "alarmsInterval": 5,
         "staleMinutes": 30,
         "phaseSums": true,
         "requestTimeout": 30

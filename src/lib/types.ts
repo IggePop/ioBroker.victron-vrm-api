@@ -101,3 +101,30 @@ export interface VrmStatsResponse {
     records: Record<string, VrmStatsPoint[] | false>;
     totals?: Record<string, number | false>;
 }
+
+/** One entry of the alarm log (active entries first, then cleared ones, newest first) */
+export interface VrmAlarmLogRecord {
+    idAlarm: number;
+    idSite: number;
+    instance: number;
+    /** Documented as number, VRM currently sends e.g. "alarm monitor" */
+    type: number | string;
+    description: string;
+    /** Unix timestamp in seconds */
+    started: number;
+    /** Unix timestamp in seconds, null while the alarm is active */
+    cleared: number | null;
+    idDataAttribute: number;
+    isActive: 0 | 1;
+    /** Device type, e.g. "VE.Bus System" */
+    device: string;
+    customName?: string | null;
+    /** Level or error text, e.g. "Warning", "Alarm" */
+    nameEnum?: string | null;
+}
+
+export interface VrmAlarmLogResponse {
+    success: boolean;
+    records: VrmAlarmLogRecord[];
+    num_records?: number;
+}

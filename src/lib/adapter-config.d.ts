@@ -20,6 +20,10 @@ declare global {
             forecast: boolean;
             /** How often the forecast is fetched from VRM, in minutes */
             forecastInterval: number;
+            /** Read the alarm log (active alarms, newest alarm, history) */
+            alarms: boolean;
+            /** Polling interval for the alarm log in minutes */
+            alarmsInterval: number;
             /** Create sums over L1-L3 for power, current and energy values */
             phaseSums: boolean;
             /** HTTP request timeout in seconds */

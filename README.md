@@ -32,6 +32,8 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
   installation.
 - Provides the PV yield and consumption forecast for today (total and rest of the day) and tomorrow, plus the
   hourly forecast as JSON.
+- Provides the alarms from the VRM alarm log: number and list of active alarms, the newest alarm and the last 25
+  entries as JSON.
 - Optionally adds sums over L1–L3 for power, current and energy values.
 - Uses the time at which VRM logged each value as the state timestamp, so history adapters (History, InfluxDB,
   SQL) store the real point in time, not the time of the poll.
@@ -61,6 +63,8 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 | Energy statistics interval | 15 min | How often the energy totals are fetched (1–1440 min) |
 | Read forecast | on | Forecast, see below |
 | Forecast interval | 60 min | How often the forecast is fetched from VRM (15–1440 min) |
+| Read alarms | on | Alarm log, see below |
+| Alarms interval | 5 min | How often the alarm log is fetched (1–1440 min) |
 | Calculate phase sums | on | Creates totals over L1–L3, see below |
 | Request timeout | 30 s | HTTP timeout per request |
 
@@ -86,6 +90,7 @@ victron-vrm-api.0
    │     │  batteryCharged, batteryDischarged (genset if present)
    │     └─ flows.*           pvToConsumers, pvToBattery, pvToGrid, gridToConsumers, …
    ├─ forecast              solar…/consumption… Today, RemainingToday, Tomorrow, PowerNow; hourly (JSON)
+   ├─ alarms                count, active, activeText, activeList, lastText, lastStarted, lastCleared, history
    ├─ devices
    │  └─ <device>_<instance>  name, deviceType, customName, productName, productCode,
    │                          firmwareVersion, lastConnection, instance
@@ -150,6 +155,32 @@ also reports heat pump or EV charger forecasts, they appear as `heatPump…` and
 Days are counted in the time zone of the installation. The adapter fetches the forecast from VRM every hour, and
 recalculates the rest of today and the current hour from that data every 5 minutes.
 
+### Alarms
+
+The adapter reads the alarm log of each installation (`/installations/{id}/alarm-log`), the same list VRM shows under
+**Alarm logs**. Only alarms that VRM monitors appear there. Which ones these are is set in VRM under
+**Settings → Alarm rules**.
+
+| State | Type | Description |
+|---|---|---|
+| `alarms.count` | number | Number of active alarms |
+| `alarms.active` | boolean | `true` while at least one alarm is active, good as a trigger |
+| `alarms.activeText` | text | Active alarms, e.g. `VE.Bus System: Overload L1 (Warning)`, empty if there are none |
+| `alarms.activeList` | JSON | Active alarms as a list (see below) |
+| `alarms.lastText` | text | Newest alarm, active or already cleared |
+| `alarms.lastStarted` / `lastCleared` | date | Start and end of the newest alarm in ms, `lastCleared` is empty while it is active |
+| `alarms.history` | JSON | The last 25 alarms, newest first |
+
+An entry of the JSON lists looks like this:
+
+```json
+{"device": "VE.Bus System", "instance": 276, "text": "Low battery (Warning)", "level": "Warning",
+ "active": false, "started": 1793453315000, "cleared": 1793453344000}
+```
+
+The device is the custom name from VRM if one is set. The alarm log is fetched every 5 minutes by default.
+An alarm can only appear once the GX device has sent its data to VRM, see the log interval above.
+
 ### Phase sums
 
 For power, current and energy values that a device reports per phase, the adapter creates a total in the `sum`
@@ -167,7 +198,6 @@ The adapter detects the phase from the name or the D-Bus path, and the quantity 
 
 ## Planned
 
-- Alarms
 - Dynamic ESS (read only)
 
 ## Developer notes

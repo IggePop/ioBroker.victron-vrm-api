@@ -126,6 +126,33 @@
                     "lg": 3,
                     "xl": 3
                 },
+                "alarms": {
+                    "type": "checkbox",
+                    "label": "Read alarms",
+                    "help": "alarmsHelp",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 8,
+                    "lg": 6,
+                    "xl": 6
+                },
+                "alarmsInterval": {
+                    "type": "number",
+                    "label": "Alarms interval",
+                    "unit": "min",
+                    "min": 1,
+                    "max": 1440,
+                    "default": 5,
+                    "hidden": "!data.alarms",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 3
+                },
                 "staleMinutes": {
                     "type": "number",
                     "label": "Mark data as stale after",

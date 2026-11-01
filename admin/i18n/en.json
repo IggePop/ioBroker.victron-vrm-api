@@ -18,5 +18,8 @@
     "Energy statistics interval": "Energy statistics interval",
     "Read forecast": "Read forecast",
     "forecastHelp": "PV yield and consumption for today (total and rest of the day) and tomorrow, plus the hourly forecast as JSON. The rest of today is updated every 5 minutes without a new request.",
-    "Forecast interval": "Forecast interval"
+    "Forecast interval": "Forecast interval",
+    "Read alarms": "Read alarms",
+    "alarmsHelp": "Number and list of the active alarms, the newest alarm and the last 25 entries of the VRM alarm log as JSON.",
+    "Alarms interval": "Alarms interval"
 }

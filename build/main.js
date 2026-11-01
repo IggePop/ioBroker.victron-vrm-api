@@ -22,6 +22,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
+var import_alarms = require("./lib/mappers/alarms");
 var import_diagnostics = require("./lib/mappers/diagnostics");
 var import_energy = require("./lib/mappers/energy");
 var import_forecast = require("./lib/mappers/forecast");
@@ -54,6 +55,7 @@ class VictronVrmApi extends utils.Adapter {
   overviewPoller;
   energyPoller;
   forecastPoller;
+  alarmsPoller;
   /** Last forecast per installation and when it was fetched */
   forecastCache = /* @__PURE__ */ new Map();
   /** Display names of the diagnostics channels per installation, from the system overview */
@@ -64,6 +66,7 @@ class VictronVrmApi extends utils.Adapter {
   siteErrors = /* @__PURE__ */ new Map();
   energyErrors = /* @__PURE__ */ new Map();
   forecastErrors = /* @__PURE__ */ new Map();
+  alarmErrors = /* @__PURE__ */ new Map();
   constructor(options = {}) {
     super({
       ...options,
@@ -181,6 +184,13 @@ class VictronVrmApi extends utils.Adapter {
       this.forecastPoller = new import_poller.Poller({ interval: FORECAST_TICK, run: () => this.pollForecast() });
       this.forecastPoller.start();
     }
+    if (this.config.alarms !== false) {
+      this.alarmsPoller = new import_poller.Poller({
+        interval: clamp(this.config.alarmsInterval, 1, 1440, 5) * MINUTE,
+        run: () => this.pollAlarms()
+      });
+      this.alarmsPoller.start();
+    }
     const interval = clamp(this.config.diagnosticsInterval, 1, 1440, 1) * MINUTE;
     this.diagnosticsPoller = new import_poller.Poller({
       interval,
@@ -192,11 +202,12 @@ class VictronVrmApi extends utils.Adapter {
     this.diagnosticsPoller.start();
   }
   stopPolling() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     (_a = this.diagnosticsPoller) == null ? void 0 : _a.stop();
     (_b = this.overviewPoller) == null ? void 0 : _b.stop();
     (_c = this.energyPoller) == null ? void 0 : _c.stop();
     (_d = this.forecastPoller) == null ? void 0 : _d.stop();
+    (_e = this.alarmsPoller) == null ? void 0 : _e.stop();
   }
   /**
    * Fetches the diagnostics of all installations.
@@ -316,6 +327,36 @@ class VictronVrmApi extends utils.Adapter {
       if (cached) {
         await this.processForecast(site, cached.records, now);
       }
+    }
+  }
+  /**
+   * Fetches the newest entries of the alarm log of all installations.
+   * Errors are logged once per installation, the diagnostics are not affected.
+   */
+  async pollAlarms() {
+    if (!this.client) {
+      return;
+    }
+    for (const site of this.installations) {
+      try {
+        const records = await this.client.getAlarmLog(site.idSite, import_alarms.ALARM_LOG_COUNT);
+        await this.processAlarms(site, records);
+        if (this.alarmErrors.delete(site.idSite)) {
+          this.log.info(`Installation ${site.name} (${site.idSite}): alarm log available again`);
+        }
+      } catch (error) {
+        this.logSiteError(site, error, this.alarmErrors, "reading the alarm log failed: ");
+      }
+    }
+  }
+  async processAlarms(site, records) {
+    const prefix = String(site.idSite);
+    const mapped = (0, import_alarms.mapAlarms)(records);
+    for (const channel of mapped.channels) {
+      await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+    }
+    for (const state of mapped.states) {
+      await this.states.setState(prefix, state);
     }
   }
   async processForecast(site, records, now) {

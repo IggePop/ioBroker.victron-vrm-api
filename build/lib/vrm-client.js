@@ -30,11 +30,13 @@ class VrmApiError extends Error {
    * @param message - Error text including the request path
    * @param status - HTTP status
    * @param retryAfter - Seconds from the Retry-After header
+   * @param errorCode - error_code of the VRM response
    */
-  constructor(message, status, retryAfter) {
+  constructor(message, status, retryAfter, errorCode) {
     super(message);
     this.status = status;
     this.retryAfter = retryAfter;
+    this.errorCode = errorCode;
     this.name = "VrmApiError";
   }
   /** Token invalid or no access - retrying makes no sense */
@@ -121,6 +123,26 @@ class VrmClient {
     return (_a = res.records) != null ? _a : {};
   }
   /**
+   * Newest entries of the alarm log, active alarms first
+   *
+   * @param idSite - Installation id
+   * @param count - Maximum number of entries
+   */
+  async getAlarmLog(idSite, count) {
+    var _a;
+    try {
+      const res = await this.get(`/installations/${idSite}/alarm-log`, {
+        count: String(count)
+      });
+      return (_a = res.records) != null ? _a : [];
+    } catch (error) {
+      if (error instanceof VrmApiError && error.errorCode === "no_results_found") {
+        return [];
+      }
+      throw error;
+    }
+  }
+  /**
    * Devices of an installation with product name and firmware
    *
    * @param idSite - Installation id
@@ -184,12 +206,18 @@ class VrmClient {
       throw new VrmApiError(
         `${url.pathname}: HTTP ${response.status} ${(_a = extractErrorText(body)) != null ? _a : response.statusText}`,
         response.status,
-        retryAfter
+        retryAfter,
+        extractErrorCode(body)
       );
     }
     const data = await response.json();
     if (data.success === false) {
-      throw new VrmApiError(`${url.pathname}: ${JSON.stringify((_b = data.errors) != null ? _b : "request not successful")}`);
+      throw new VrmApiError(
+        `${url.pathname}: ${JSON.stringify((_b = data.errors) != null ? _b : "request not successful")}`,
+        void 0,
+        void 0,
+        data.error_code
+      );
     }
     return data;
   }
@@ -201,6 +229,13 @@ function extractErrorText(body) {
       return typeof json.errors === "string" ? json.errors : JSON.stringify(json.errors);
     }
     return json.error_code;
+  } catch {
+    return void 0;
+  }
+}
+function extractErrorCode(body) {
+  try {
+    return JSON.parse(body).error_code;
   } catch {
     return void 0;
   }

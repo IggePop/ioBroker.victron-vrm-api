@@ -22,6 +22,10 @@ describe("VrmClient", () => {
                 res.end(JSON.stringify({ success: true, user: { id: 42, name: "Test" } }));
             } else if (lastUrl.startsWith("/installations/1/diagnostics")) {
                 res.end(JSON.stringify({ success: true, records: [{ code: "bs" }] }));
+            } else if (lastUrl.startsWith("/installations/1/alarm-log")) {
+                res.end(
+                    JSON.stringify({ success: false, error_code: "no_results_found", errors: ["No alarm log found."] }),
+                );
             } else if (lastUrl.startsWith("/limited")) {
                 res.statusCode = 429;
                 res.setHeader("Retry-After", "1");
@@ -74,6 +78,12 @@ describe("VrmClient", () => {
         const start = Date.now();
         await client.getMe();
         expect(Date.now() - start).to.be.at.least(900);
+    });
+
+    it("returns an empty alarm log instead of an error", async () => {
+        const client = new VrmClient("secret", { baseUrl, queue: new RequestQueue(0) });
+        expect(await client.getAlarmLog(1, 25)).to.deep.equal([]);
+        expect(lastUrl).to.equal("/installations/1/alarm-log?count=25");
     });
 
     it("treats success=false as error", async () => {
