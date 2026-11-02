@@ -9,6 +9,8 @@ export interface SiteExpectation {
     diagnostics?: Set<string>;
     /** Whether the phase sums (diagnostics.<key>.sum) are enabled */
     phaseSums: boolean;
+    /** State ids "diagnostics.<key>.sum.<name>" of the current phase sums, undefined if unknown */
+    sums?: Set<string>;
     /** Enabled state of the optional folders */
     folders: Record<(typeof OPTIONAL_FOLDERS)[number], boolean>;
 }
@@ -55,6 +57,9 @@ export function findObsolete(
                 add(parts.slice(0, 3).join("."));
             } else if (sub === "sum" && !site.phaseSums) {
                 add(parts.slice(0, 4).join("."));
+            } else if (sub === "sum" && parts.length === 5 && site.sums && !site.sums.has(parts.slice(1).join("."))) {
+                // e.g. sums of setpoints that are no longer calculated
+                add(id);
             } else if (sub !== undefined && excluded?.(id)) {
                 add(id);
             }

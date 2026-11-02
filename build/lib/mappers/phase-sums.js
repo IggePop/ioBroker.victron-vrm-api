@@ -20,6 +20,7 @@ var phase_sums_exports = {};
 __export(phase_sums_exports, {
   detectPhase: () => detectPhase,
   detectQuantity: () => detectQuantity,
+  isLimitOrSetpoint: () => isLimitOrSetpoint,
   mapPhaseSums: () => mapPhaseSums,
   stripPhase: () => stripPhase
 });
@@ -49,6 +50,10 @@ function detectQuantity(record) {
   }
   return Object.keys(QUANTITY_UNITS).find((q) => unit && QUANTITY_UNITS[q].units.includes(unit));
 }
+function isLimitOrSetpoint(record) {
+  var _a, _b;
+  return /\b(set\s*point|setpoint|limit|max|maximum|min|minimum)\b/i.test((_a = record.description) != null ? _a : "") || /setpoint|limit|\/max|\/min/i.test((_b = record.dbusPath) != null ? _b : "");
+}
 function stripPhase(name) {
   let result = name.replace(/\bL[123]\b/, " ");
   if (result === name) {
@@ -67,6 +72,9 @@ function mapPhaseSums(records) {
   const groups = /* @__PURE__ */ new Map();
   for (const record of records) {
     if (!record || record.Device === void 0) {
+      continue;
+    }
+    if (isLimitOrSetpoint(record)) {
       continue;
     }
     const phase = detectPhase(record);
@@ -125,6 +133,7 @@ function mapPhaseSums(records) {
 0 && (module.exports = {
   detectPhase,
   detectQuantity,
+  isLimitOrSetpoint,
   mapPhaseSums,
   stripPhase
 });

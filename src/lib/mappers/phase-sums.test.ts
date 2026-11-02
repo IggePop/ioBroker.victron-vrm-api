@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import type { VrmDiagnosticRecord } from "../types";
-import { detectPhase, detectQuantity, mapPhaseSums, stripPhase } from "./phase-sums";
+import { detectPhase, detectQuantity, isLimitOrSetpoint, mapPhaseSums, stripPhase } from "./phase-sums";
 
 function record(
     Device: string,
@@ -107,6 +107,23 @@ describe("phase sums mapper", () => {
                 timestamp: 1_700_000_060,
             };
             expect(mapPhaseSums([l1, l2])[0].ts).to.equal(1_700_000_060_000);
+        });
+
+        it("skips setpoints and limits", () => {
+            const vebus = (code: string, desc: string, path: string): VrmDiagnosticRecord =>
+                record("VE.Bus System", 276, code, desc, "%.0F W", path, 1000);
+            const sums = mapPhaseSums([
+                vebus("aps1", "Hub4 power setpoint phase 1", "/Hub4/L1/AcPowerSetpoint"),
+                vebus("aps2", "Hub4 power setpoint phase 2", "/Hub4/L2/AcPowerSetpoint"),
+                vebus("H4l1", "Max Feedin Power L1", "/Hub4/L1/MaxFeedInPower"),
+                vebus("H4l2", "Max Feedin Power L2", "/Hub4/L2/MaxFeedInPower"),
+                vebus("OP1", "Output power 1", "/Ac/Out/L1/P"),
+                vebus("OP2", "Output power 2", "/Ac/Out/L2/P"),
+            ]);
+            expect(sums.map(s => s.id)).to.deep.equal(["diagnostics.ve_bus_system_276.sum.Output_power"]);
+            expect(isLimitOrSetpoint(vebus("x", "Grid L1 - Power", "/Ac/L1/Power"))).to.be.false;
+            expect(isLimitOrSetpoint(vebus("x", "Current limit L1", "/Ac/L1/CurrentLimit"))).to.be.true;
+            expect(isLimitOrSetpoint(vebus("x", "Peak power L1", "/Ac/L1/MaxPower"))).to.be.true;
         });
 
         it("keeps devices apart and ignores single phases", () => {

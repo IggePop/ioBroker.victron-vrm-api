@@ -68,6 +68,7 @@ class VictronVrmApi extends utils.Adapter {
     /** Channel ids of the devices VRM currently reports, per installation (for the cleanup) */
     private currentDevices = new Map<number, Set<string>>();
     private currentDiagnostics = new Map<number, Set<string>>();
+    private currentSums = new Map<number, Set<string>>();
     private cleanupDone = false;
     /** Exclusion list for devices and diagnostics values */
     private filter: ValueFilter = createFilter("");
@@ -317,6 +318,7 @@ class VictronVrmApi extends utils.Adapter {
                     devices: this.currentDevices.get(site.idSite),
                     diagnostics: this.currentDiagnostics.get(site.idSite),
                     phaseSums: this.config.phaseSums !== false,
+                    sums: this.currentSums.get(site.idSite),
                     folders: {
                         energy: this.config.energyStats !== false,
                         forecast: this.config.forecast !== false,
@@ -538,6 +540,9 @@ class VictronVrmApi extends utils.Adapter {
         // default on, also for instances created before the option existed
         if (this.config.phaseSums !== false) {
             const sums = mapPhaseSums(records).filter(included);
+            if (mapped.channels.length) {
+                this.currentSums.set(site.idSite, new Set(sums.map(sum => sum.id)));
+            }
             for (const channel of new Set(sums.map(sum => sum.id.slice(0, sum.id.lastIndexOf("."))))) {
                 await this.states.ensureChannel(`${prefix}.${channel}`, "Sums over L1-L3");
             }

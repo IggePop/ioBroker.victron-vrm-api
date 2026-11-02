@@ -51,6 +51,8 @@ function findObsolete(ids, sites, excluded) {
         add(parts.slice(0, 3).join("."));
       } else if (sub === "sum" && !site.phaseSums) {
         add(parts.slice(0, 4).join("."));
+      } else if (sub === "sum" && parts.length === 5 && site.sums && !site.sums.has(parts.slice(1).join("."))) {
+        add(id);
       } else if (sub !== void 0 && (excluded == null ? void 0 : excluded(id))) {
         add(id);
       }

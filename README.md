@@ -196,7 +196,8 @@ folder of that device. Examples:
 | `diagnostics.ve_bus_system_276.sum.Input_power` | Input power 1 + 2 + 3 |
 
 The adapter detects the phase from the name or the D-Bus path, and the quantity from the name or the unit
-(W, A, kWh). A total is created as soon as at least two phases are present.
+(W, A, kWh). A total is created as soon as at least two phases are present. Setpoints, limits and minimum or
+maximum values (e.g. `Hub4 power setpoint`, `Max Feedin Power`) get no total, because their sum is not a measured value.
 `native.sources` of each sum state lists the codes it was built from.
 
 ### Excluding devices and values
@@ -232,7 +233,7 @@ after the first successful poll:
 - installations that are no longer selected or no longer in the account,
 - devices (`devices.*`, `diagnostics.*`) that VRM no longer reports, e.g. after removing them in the VRM device list,
 - the `energy`, `forecast` and `alarms` folders when the matching option is disabled,
-- the `sum` folders when the phase sums are disabled,
+- the `sum` folders when the phase sums are disabled, and single sums that are no longer calculated,
 - devices and values that match the exclusion list.
 
 Each deleted object is logged. Data already stored by History, InfluxDB or SQL is kept, but the settings of the
@@ -291,6 +292,7 @@ or supported by Victron Energy. It uses the public VRM API.
 ### **WORK IN PROGRESS**
 * (IggePop) option to delete obsolete objects (deselected installations, removed devices, disabled options)
 * (IggePop) exclusion list for devices and diagnostics values
+* (IggePop) no phase sums for setpoints and limits (e.g. Hub4 power setpoint, Max Feedin Power)
 
 ### 0.1.0 (2026-11-02)
 * (IggePop) initial release

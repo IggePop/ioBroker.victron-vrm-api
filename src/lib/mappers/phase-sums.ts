@@ -46,6 +46,19 @@ export function detectQuantity(record: VrmDiagnosticRecord): Quantity | undefine
 }
 
 /**
+ * Setpoints, limits and minimum/maximum values, e.g. "Max Feedin Power L1" or "Hub4 power setpoint phase 1".
+ * Their sum is technically correct but not a measured value, so no sum is built for them.
+ *
+ * @param record
+ */
+export function isLimitOrSetpoint(record: VrmDiagnosticRecord): boolean {
+    return (
+        /\b(set\s*point|setpoint|limit|max|maximum|min|minimum)\b/i.test(record.description ?? "") ||
+        /setpoint|limit|\/max|\/min/i.test(record.dbusPath ?? "")
+    );
+}
+
+/**
  * Removes the phase marker from a name: "Grid L1 - Power" → "Grid - Power", "Input power 1" → "Input power"
  *
  * @param name
@@ -71,7 +84,7 @@ function toNumber(raw: VrmDiagnosticRecord["rawValue"]): number | undefined {
 
 /**
  * Builds sums over L1-L3 for power, current and energy values of the same device.
- * A sum is created when at least two phases of the same value exist.
+ * A sum is created when at least two phases of the same value exist. Setpoints and limits are skipped.
  * The states are placed in a "sum" channel below the device, e.g. "diagnostics.grid_meter_40.sum.Grid_Power".
  *
  * @param records
@@ -81,6 +94,9 @@ export function mapPhaseSums(records: VrmDiagnosticRecord[]): StateDef[] {
 
     for (const record of records) {
         if (!record || record.Device === undefined) {
+            continue;
+        }
+        if (isLimitOrSetpoint(record)) {
             continue;
         }
         const phase = detectPhase(record);
