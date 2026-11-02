@@ -4,6 +4,7 @@
 
 import * as utils from "@iobroker/adapter-core";
 import { findObsolete, type SiteExpectation } from "./lib/cleanup";
+import { parseScriptRequest, RateLimiter } from "./lib/script-request";
 import { createFilter, type ValueFilter } from "./lib/filter";
 import { ALARM_LOG_COUNT, mapAlarms } from "./lib/mappers/alarms";
 import { mapDiagnostics, type StateDef } from "./lib/mappers/diagnostics";
@@ -25,6 +26,8 @@ const INIT_MAX_RETRY_DELAY = 15 * MINUTE;
 const OVERVIEW_INTERVAL = 60 * MINUTE;
 /** How often "rest of today" and "current hour" of the forecast are recalculated */
 const FORECAST_TICK = 5 * MINUTE;
+/** Maximum number of sendTo("get") requests from scripts per minute, VRM limits the requests per token */
+const SCRIPT_REQUESTS_PER_MINUTE = 30;
 
 function clamp(value: unknown, min: number, max: number, fallback: number): number {
     const num = Number(value);
@@ -56,6 +59,8 @@ class VictronVrmApi extends utils.Adapter {
     private client: VrmClient | undefined;
     private states!: StateManager;
     private installations: VrmInstallation[] = [];
+    private userId: number | undefined;
+    private scriptLimiter = new RateLimiter(SCRIPT_REQUESTS_PER_MINUTE, MINUTE);
     private diagnosticsPoller: Poller | undefined;
     private overviewPoller: Poller | undefined;
     private energyPoller: Poller | undefined;
@@ -121,6 +126,7 @@ class VictronVrmApi extends utils.Adapter {
         }
         try {
             const user = await this.client.getMe();
+            this.userId = user.id;
             await this.states.setValue("info.user.id", user.id, {
                 name: "VRM user id",
                 type: "number",
@@ -578,14 +584,52 @@ class VictronVrmApi extends utils.Adapter {
     }
 
     /**
-     * Handles messages from the admin UI (selectSendTo "getInstallations").
+     * Handles messages from the admin UI (selectSendTo "getInstallations") and from scripts ("get").
      *
-     * @param obj
+     * @param obj - Message with command, payload and callback
      */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
-        if (!obj || obj.command !== "getInstallations") {
-            return;
+        if (obj?.command === "getInstallations") {
+            await this.handleGetInstallations(obj);
+        } else if (obj?.command === "get") {
+            const result = await this.handleScriptRequest(obj.message);
+            if (obj.callback) {
+                this.sendTo(obj.from, obj.command, result, obj.callback);
+            }
         }
+    }
+
+    /**
+     * GET request of a script to the VRM API, e.g.
+     * sendTo("victron-vrm-api.0", "get", { path: "/installations/123/stats", params: { type: "kwh" } }, cb)
+     *
+     * @param message - { path, params }
+     */
+    private async handleScriptRequest(
+        message: unknown,
+    ): Promise<{ data: unknown } | { error: string; status?: number }> {
+        if (!this.client || !this.installations.length) {
+            return { error: "Adapter is not connected to VRM yet" };
+        }
+        const request = parseScriptRequest(message, new Set(this.installations.map(site => site.idSite)), this.userId);
+        if ("error" in request) {
+            return request;
+        }
+        if (!this.scriptLimiter.tryAcquire()) {
+            return { error: `Too many requests from scripts (max. ${SCRIPT_REQUESTS_PER_MINUTE} per minute)` };
+        }
+        try {
+            this.log.debug(`Script request ${request.path} ${JSON.stringify(request.params)}`);
+            return { data: await this.client.get(request.path, request.params) };
+        } catch (error) {
+            return {
+                error: errorMessage(error),
+                ...(error instanceof VrmApiError && error.status ? { status: error.status } : {}),
+            };
+        }
+    }
+
+    private async handleGetInstallations(obj: ioBroker.Message): Promise<void> {
         const message = (obj.message ?? {}) as { token?: string };
         const token = (message.token || this.config.token || "").trim();
         let result: { label: string; value: string }[];

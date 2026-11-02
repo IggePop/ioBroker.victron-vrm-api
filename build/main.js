@@ -23,6 +23,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_cleanup = require("./lib/cleanup");
+var import_script_request = require("./lib/script-request");
 var import_filter = require("./lib/filter");
 var import_alarms = require("./lib/mappers/alarms");
 var import_diagnostics = require("./lib/mappers/diagnostics");
@@ -39,6 +40,7 @@ const INIT_RETRY_DELAY = MINUTE;
 const INIT_MAX_RETRY_DELAY = 15 * MINUTE;
 const OVERVIEW_INTERVAL = 60 * MINUTE;
 const FORECAST_TICK = 5 * MINUTE;
+const SCRIPT_REQUESTS_PER_MINUTE = 30;
 function clamp(value, min, max, fallback) {
   const num = Number(value);
   if (!Number.isFinite(num)) {
@@ -61,6 +63,8 @@ class VictronVrmApi extends utils.Adapter {
   client;
   states;
   installations = [];
+  userId;
+  scriptLimiter = new import_script_request.RateLimiter(SCRIPT_REQUESTS_PER_MINUTE, MINUTE);
   diagnosticsPoller;
   overviewPoller;
   energyPoller;
@@ -121,6 +125,7 @@ class VictronVrmApi extends utils.Adapter {
     }
     try {
       const user = await this.client.getMe();
+      this.userId = user.id;
       await this.states.setValue("info.user.id", user.id, {
         name: "VRM user id",
         type: "number",
@@ -526,15 +531,49 @@ class VictronVrmApi extends utils.Adapter {
     );
   }
   /**
-   * Handles messages from the admin UI (selectSendTo "getInstallations").
+   * Handles messages from the admin UI (selectSendTo "getInstallations") and from scripts ("get").
    *
-   * @param obj
+   * @param obj - Message with command, payload and callback
    */
   async onMessage(obj) {
-    var _a;
-    if (!obj || obj.command !== "getInstallations") {
-      return;
+    if ((obj == null ? void 0 : obj.command) === "getInstallations") {
+      await this.handleGetInstallations(obj);
+    } else if ((obj == null ? void 0 : obj.command) === "get") {
+      const result = await this.handleScriptRequest(obj.message);
+      if (obj.callback) {
+        this.sendTo(obj.from, obj.command, result, obj.callback);
+      }
     }
+  }
+  /**
+   * GET request of a script to the VRM API, e.g.
+   * sendTo("victron-vrm-api.0", "get", { path: "/installations/123/stats", params: { type: "kwh" } }, cb)
+   *
+   * @param message - { path, params }
+   */
+  async handleScriptRequest(message) {
+    if (!this.client || !this.installations.length) {
+      return { error: "Adapter is not connected to VRM yet" };
+    }
+    const request = (0, import_script_request.parseScriptRequest)(message, new Set(this.installations.map((site) => site.idSite)), this.userId);
+    if ("error" in request) {
+      return request;
+    }
+    if (!this.scriptLimiter.tryAcquire()) {
+      return { error: `Too many requests from scripts (max. ${SCRIPT_REQUESTS_PER_MINUTE} per minute)` };
+    }
+    try {
+      this.log.debug(`Script request ${request.path} ${JSON.stringify(request.params)}`);
+      return { data: await this.client.get(request.path, request.params) };
+    } catch (error) {
+      return {
+        error: errorMessage(error),
+        ...error instanceof import_vrm_client.VrmApiError && error.status ? { status: error.status } : {}
+      };
+    }
+  }
+  async handleGetInstallations(obj) {
+    var _a;
     const message = (_a = obj.message) != null ? _a : {};
     const token = (message.token || this.config.token || "").trim();
     let result;

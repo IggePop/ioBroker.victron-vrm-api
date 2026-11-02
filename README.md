@@ -39,6 +39,7 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 - Uses the time at which VRM logged each value as the state timestamp, so history adapters (History, InfluxDB,
   SQL) store the real point in time, not the time of the poll.
 - Shows whether the data in VRM is still fresh (`info.dataStale`).
+- Answers read-only VRM requests from scripts (`sendTo`), see below.
 - Sends requests one after another, honours the VRM rate limit (HTTP 429) and backs off when errors occur.
 
 ## Requirements
@@ -239,6 +240,34 @@ after the first successful poll:
 Each deleted object is logged. Data already stored by History, InfluxDB or SQL is kept, but the settings of the
 deleted states (e.g. history logging) are lost. If VRM returns an empty device list, no devices are deleted.
 
+### Requests from scripts
+
+Scripts can read any other VRM data through the adapter with `sendTo`. The token stays in the adapter
+configuration, and the request uses the same queue as the adapter, so the VRM rate limit applies to both.
+
+```js
+sendTo("victron-vrm-api.0", "get", {
+    path: "/installations/123456/stats",
+    params: { type: "kwh", interval: "days", start: 1772323200, end: 1774998000 },
+}, result => {
+    if (result.error) {
+        log(`VRM request failed: ${result.error}`, "warn");
+    } else {
+        log(JSON.stringify(result.data.records));
+    }
+});
+```
+
+| Field | Description |
+|---|---|
+| `path` | Path of the [VRM API](https://vrm-api-docs.victronenergy.com/), e.g. `/installations/<idSite>/widgets/BatterySummary` |
+| `params` | Query parameters as object. Arrays become repeated parameters, e.g. `{ "attributeCodes[]": ["Pc", "Pb"] }` |
+
+The answer is `{ data }` with the complete VRM response, or `{ error, status }` with the HTTP status if VRM
+returned one. Only GET requests are possible, and only for paths below the installations the adapter polls
+(`/installations/<idSite>/…`) and for the own user (`/users/me`, `/users/<own id>/…`). Scripts may send up to
+30 requests per minute.
+
 ## Planned
 
 - Dynamic ESS (read only)
@@ -293,6 +322,7 @@ or supported by Victron Energy. It uses the public VRM API.
 * (IggePop) option to delete obsolete objects (deselected installations, removed devices, disabled options)
 * (IggePop) exclusion list for devices and diagnostics values
 * (IggePop) no phase sums for setpoints and limits (e.g. Hub4 power setpoint, Max Feedin Power)
+* (IggePop) sendTo "get" for own read-only VRM requests from scripts
 
 ### 0.1.0 (2026-11-02)
 * (IggePop) initial release
