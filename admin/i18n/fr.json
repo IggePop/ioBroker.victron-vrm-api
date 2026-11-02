@@ -15,6 +15,7 @@
     "Read energy statistics": "Lire les statistiques énergétiques",
     "Read forecast": "Lire les prévisions",
     "Request timeout": "Délai d'attente des requêtes",
+    "Test connection": "Tester la connexion",
     "alarmsHelp": "Nombre et liste des alarmes actives, l'alarme la plus récente et les 25 dernières entrées du journal des alarmes VRM au format JSON.",
     "cleanupHelp": "A chaque démarrage, supprime les objets des installations qui ne sont plus interrogées, des appareils que VRM ne signale plus, des options désactivées et les sommes de phases lorsqu'elles sont désactivées. Les données d'historique des états supprimés sont conservées, mais leurs paramètres (par exemple l'historique) sont perdus.",
     "energyStatsHelp": "Rendement photovoltaïque, consommation, importation/exportation du réseau et batterie chargée/déchargée pour aujourd'hui, semaine, mois et année (une demande par installation).",
@@ -24,6 +25,7 @@
     "phaseSumsHelp": "Crée un total supplémentaire pour les valeurs de puissance, de courant et d'énergie rapportées par phase (L1, L2, L3) dans le dossier « somme » de l'appareil.",
     "sitesHelp": "Laissez vide pour interroger toutes les installations. La liste est chargée via l'instance en cours d'exécution – enregistrez d'abord le jeton si la liste reste vide.",
     "staleHelp": "Définit info.dataStale lorsque VRM n'a reçu aucune nouvelle donnée du périphérique GX pour cette période.",
+    "testConnectionHelp": "Vérifie le jeton saisi avec VRM, également avant de l'enregistrer, et affiche l'utilisateur et les installations. L'instance doit être en cours d'exécution.",
     "tokenHelp": "Créez un jeton d'accès dans le portail VRM sous Préférences → Intégrations → Jetons d'accès.",
     "victron-vrm-api adapter settings": "Paramètres de l'adaptateur pour victron-vrm-api"
 }

@@ -15,6 +15,7 @@
     "Read energy statistics": "Energiestatistieken ophalen",
     "Read forecast": "Voorspelling ophalen",
     "Request timeout": "Time-out van verzoeken",
+    "Test connection": "Verbinding testen",
     "alarmsHelp": "Aantal en lijst van de actieve alarmen, het nieuwste alarm en de laatste 25 vermeldingen van het VRM-alarmlogboek als JSON.",
     "cleanupHelp": "Verwijdert bij elke start de objecten van installaties die niet meer worden opgevraagd, van apparaten die VRM niet meer meldt, van uitgeschakelde opties en de fasesommen als die zijn uitgeschakeld. Reeds opgeslagen geschiedenisgegevens blijven behouden, maar de instellingen van de verwijderde states (bijv. History) gaan verloren.",
     "energyStatsHelp": "PV-opbrengst, verbruik, import/export van het elektriciteitsnet en opladen/ontladen van de batterij voor vandaag, week, maand en jaar (één aanvraag per installatie).",
@@ -24,6 +25,7 @@
     "phaseSumsHelp": "Creëert een extra totaal voor vermogen-, stroom- en energiewaarden gerapporteerd per fase (L1, L2, L3) in de map \"som\" van het apparaat.",
     "sitesHelp": "Laat dit leeg om alle installaties te pollen. De lijst wordt geladen via het actieve exemplaar. Sla het token eerst op als de lijst leeg blijft.",
     "staleHelp": "Stelt info.dataStale in wanneer VRM gedurende deze tijd geen nieuwe gegevens van het GX-apparaat heeft ontvangen.",
+    "testConnectionHelp": "Controleert de ingevoerde token met VRM, ook vóór het opslaan, en toont de gebruiker en de installaties. De instantie moet actief zijn.",
     "tokenHelp": "Maak een toegangstoken in de VRM-portal onder Voorkeuren → Integraties → Toegangstokens.",
     "victron-vrm-api adapter settings": "Adapterinstellingen voor victron-vrm-api"
 }

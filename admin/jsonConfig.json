@@ -26,6 +26,21 @@
                     "lg": 6,
                     "xl": 6
                 },
+                "_testConnection": {
+                    "type": "sendTo",
+                    "label": "Test connection",
+                    "help": "testConnectionHelp",
+                    "command": "testConnection",
+                    "jsonData": "{\"token\": \"${data.token}\"}",
+                    "variant": "outlined",
+                    "showProcess": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 8,
+                    "lg": 6,
+                    "xl": 6
+                },
                 "sites": {
                     "type": "selectSendTo",
                     "label": "Installations",

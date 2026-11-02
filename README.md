@@ -58,6 +58,7 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 | Option | Default | Description |
 |---|---|---|
 | Access token | – | VRM access token. It is stored encrypted. |
+| Test connection | – | Button: checks the entered token, also before saving, and shows the user and the installations |
 | Installations | all | Installations to poll |
 | Live values / diagnostics interval | 1 min | How often the diagnostics are fetched (1–1440 min) |
 | Mark data as stale after | 30 min | Sets `info.dataStale` when VRM has received no new data for this time |
@@ -323,6 +324,7 @@ or supported by Victron Energy. It uses the public VRM API.
 * (IggePop) exclusion list for devices and diagnostics values
 * (IggePop) no phase sums for setpoints and limits (e.g. Hub4 power setpoint, Max Feedin Power)
 * (IggePop) sendTo "get" for own read-only VRM requests from scripts
+* (IggePop) button "Test connection" in the instance settings
 
 ### 0.1.0 (2026-11-02)
 * (IggePop) initial release

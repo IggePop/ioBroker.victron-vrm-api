@@ -15,6 +15,7 @@
     "Read energy statistics": "Leggere le statistiche energetiche",
     "Read forecast": "Leggere le previsioni",
     "Request timeout": "Timeout della richiesta",
+    "Test connection": "Testa connessione",
     "alarmsHelp": "Numero ed elenco degli allarmi attivi, dell'allarme più recente e delle ultime 25 voci del registro allarmi VRM come JSON.",
     "cleanupHelp": "Ad ogni avvio cancella gli oggetti degli impianti che non vengono più interrogati, dei dispositivi che VRM non segnala più, delle opzioni disabilitate e le somme di fase quando sono disabilitate. I dati storici degli stati eliminati vengono conservati, ma le relative impostazioni (ad esempio la cronologia) vengono perse.",
     "energyStatsHelp": "Resa fotovoltaica, consumo, importazione/esportazione rete e batteria carica/scarica per oggi, settimana, mese e anno (una richiesta per installazione).",
@@ -24,6 +25,7 @@
     "phaseSumsHelp": "Crea un totale aggiuntivo dei valori di potenza, corrente ed energia riportati per fase (L1, L2, L3) nella cartella \"somma\" del dispositivo.",
     "sitesHelp": "Lasciare vuoto per interrogare tutte le installazioni. L'elenco viene caricato tramite l'istanza in esecuzione: salva prima il token se l'elenco rimane vuoto.",
     "staleHelp": "Imposta info.dataStale quando VRM non ha ricevuto nuovi dati dal dispositivo GX per questo periodo.",
+    "testConnectionHelp": "Controlla il token inserito con VRM, anche prima del salvataggio, e mostra l'utente e le installazioni. L'istanza deve essere in esecuzione.",
     "tokenHelp": "Crea un token di accesso nel portale VRM in Preferenze → Integrazioni → Token di accesso.",
     "victron-vrm-api adapter settings": "Impostazioni dell'adattatore per victron-vrm-api"
 }

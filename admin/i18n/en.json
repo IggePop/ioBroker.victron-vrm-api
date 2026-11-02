@@ -25,5 +25,7 @@
     "Delete obsolete objects": "Delete obsolete objects",
     "cleanupHelp": "At every start, deletes the objects of installations that are no longer polled, of devices that VRM no longer reports, of disabled options and the phase sums when they are disabled. History data of deleted states is kept, but their settings (e.g. history) are lost.",
     "Exclude devices and values": "Exclude devices and values",
-    "excludeHelp": "One pattern per line, * and ? as wildcards, # for comments. A pattern matches a device (gateway_0, MultiPlus*), a value (ve_bus_system_276.vvp) or the name of a value (*alarm*). Applies to diagnostics, phase sums and the device list, live values are always kept. Enable \"Delete obsolete objects\" to remove existing objects."
+    "excludeHelp": "One pattern per line, * and ? as wildcards, # for comments. A pattern matches a device (gateway_0, MultiPlus*), a value (ve_bus_system_276.vvp) or the name of a value (*alarm*). Applies to diagnostics, phase sums and the device list, live values are always kept. Enable \"Delete obsolete objects\" to remove existing objects.",
+    "Test connection": "Test connection",
+    "testConnectionHelp": "Checks the entered token with VRM, also before saving, and shows the user and the installations. The instance must be running."
 }

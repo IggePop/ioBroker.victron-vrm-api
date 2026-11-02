@@ -591,6 +591,11 @@ class VictronVrmApi extends utils.Adapter {
     private async onMessage(obj: ioBroker.Message): Promise<void> {
         if (obj?.command === "getInstallations") {
             await this.handleGetInstallations(obj);
+        } else if (obj?.command === "testConnection") {
+            const result = await this.handleTestConnection(obj.message);
+            if (obj.callback) {
+                this.sendTo(obj.from, obj.command, result, obj.callback);
+            }
         } else if (obj?.command === "get") {
             const result = await this.handleScriptRequest(obj.message);
             if (obj.callback) {
@@ -626,6 +631,32 @@ class VictronVrmApi extends utils.Adapter {
                 error: errorMessage(error),
                 ...(error instanceof VrmApiError && error.status ? { status: error.status } : {}),
             };
+        }
+    }
+
+    /**
+     * Button "Test connection" in admin: checks the entered (possibly unsaved) token
+     *
+     * @param message - { token }
+     */
+    private async handleTestConnection(message: unknown): Promise<{ result: string } | { error: string }> {
+        const token = ((message as { token?: string } | null)?.token || this.config.token || "").trim();
+        if (!token) {
+            return { error: "Please enter an access token first" };
+        }
+        try {
+            const client = new VrmClient(token, { timeout: 30_000 });
+            const user = await client.getMe();
+            const sites = await client.getInstallations(user.id);
+            const list = sites.map(site => `${site.name} (${site.idSite})`).join(", ");
+            return {
+                result: `Connected as ${user.name} (user id ${user.id}). ${sites.length} installation(s): ${list || "none"}`,
+            };
+        } catch (error) {
+            if (error instanceof VrmApiError && error.isAuthError) {
+                return { error: `VRM rejected the access token: ${error.message}` };
+            }
+            return { error: `Connection failed: ${errorMessage(error)}` };
         }
     }
 
