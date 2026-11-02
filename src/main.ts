@@ -4,8 +4,9 @@
 
 import * as utils from "@iobroker/adapter-core";
 import { findObsolete, type SiteExpectation } from "./lib/cleanup";
+import { createFilter, type ValueFilter } from "./lib/filter";
 import { ALARM_LOG_COUNT, mapAlarms } from "./lib/mappers/alarms";
-import { mapDiagnostics } from "./lib/mappers/diagnostics";
+import { mapDiagnostics, type StateDef } from "./lib/mappers/diagnostics";
 import { ENERGY_CODES, ENERGY_PERIODS, mapEnergy } from "./lib/mappers/energy";
 import { forecastWindow, mapForecast } from "./lib/mappers/forecast";
 import { mapLive } from "./lib/mappers/live";
@@ -33,6 +34,20 @@ function clamp(value: unknown, min: number, max: number, fallback: number): numb
     return Math.min(Math.max(num, min), max);
 }
 
+/**
+ * Splits a channel or state id like "diagnostics.<key>.<id>" into the device key and the id below the device
+ *
+ * @param id - Id relative to the installation
+ */
+function splitDeviceId(id: string): { key: string; rest: string } {
+    const [, key, ...rest] = id.split(".");
+    return { key, rest: rest.join(".") };
+}
+
+function textOf(name: ioBroker.StringOrTranslated | undefined): string {
+    return typeof name === "string" ? name : (name?.en ?? "");
+}
+
 function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
@@ -54,6 +69,8 @@ class VictronVrmApi extends utils.Adapter {
     private currentDevices = new Map<number, Set<string>>();
     private currentDiagnostics = new Map<number, Set<string>>();
     private cleanupDone = false;
+    /** Exclusion list for devices and diagnostics values */
+    private filter: ValueFilter = createFilter("");
     private initTimer: ioBroker.Timeout | undefined;
     private initFailures = 0;
     /** Last error message per installation, used to avoid log spam */
@@ -77,6 +94,7 @@ class VictronVrmApi extends utils.Adapter {
      */
     private async onReady(): Promise<void> {
         this.states = new StateManager(this);
+        this.filter = createFilter(this.config.exclude);
         await this.setState("info.connection", false, true);
 
         const token = (this.config.token ?? "").trim();
@@ -280,9 +298,19 @@ class VictronVrmApi extends utils.Adapter {
     private async cleanupObjects(): Promise<void> {
         try {
             const prefix = `${this.namespace}.`;
-            const ids = Object.keys(await this.getAdapterObjectsAsync())
+            const objects = await this.getAdapterObjectsAsync();
+            const ids = Object.keys(objects)
                 .filter(id => id.startsWith(prefix))
                 .map(id => id.slice(prefix.length));
+            // diagnostics.<key>.<id> below an installation, compared like in processDiagnostics
+            const excluded = (id: string): boolean => {
+                const obj = objects[`${prefix}${id}`];
+                if (obj?.type !== "state") {
+                    return false;
+                }
+                const { key, rest } = splitDeviceId(id.slice(id.indexOf(".") + 1));
+                return this.filter.excludesValue(key, rest, textOf(obj.common.name));
+            };
             const sites = new Map<number, SiteExpectation>();
             for (const site of this.installations) {
                 sites.set(site.idSite, {
@@ -296,7 +324,7 @@ class VictronVrmApi extends utils.Adapter {
                     },
                 });
             }
-            for (const id of findObsolete(ids, sites)) {
+            for (const id of findObsolete(ids, sites, this.filter.empty ? undefined : excluded)) {
                 this.log.info(`Deleting obsolete object ${id}`);
                 await this.delObjectAsync(id, { recursive: true });
                 this.states.forget(id);
@@ -330,17 +358,23 @@ class VictronVrmApi extends utils.Adapter {
         const prefix = String(site.idSite);
         const mapped = mapOverview(devices);
         this.deviceLabels.set(site.idSite, mapped.labels);
+        const channels = mapped.channels.filter(
+            channel => !this.filter.excludesDevice(splitDeviceId(channel.id).key, channel.name),
+        );
+        const keys = new Set(channels.map(channel => splitDeviceId(channel.id).key));
         // an empty list is more likely a hiccup than an installation without devices
         if (mapped.channels.length) {
-            this.currentDevices.set(site.idSite, new Set(mapped.channels.map(channel => channel.id)));
+            this.currentDevices.set(site.idSite, new Set(channels.map(channel => channel.id)));
         }
 
         await this.states.ensureChannel(`${prefix}.devices`, "Devices");
-        for (const channel of mapped.channels) {
+        for (const channel of channels) {
             await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
         }
         for (const state of mapped.states) {
-            await this.states.setState(prefix, state);
+            if (keys.has(splitDeviceId(state.id).key)) {
+                await this.states.setState(prefix, state);
+            }
         }
     }
 
@@ -478,22 +512,32 @@ class VictronVrmApi extends utils.Adapter {
     ): Promise<void> {
         const prefix = String(site.idSite);
         const mapped = mapDiagnostics(records);
+        const labels = this.deviceLabels.get(site.idSite);
+        const channels = mapped.channels.filter(
+            channel => !this.filter.excludesDevice(splitDeviceId(channel.id).key, labels?.get(channel.id)),
+        );
         if (mapped.channels.length) {
-            this.currentDiagnostics.set(site.idSite, new Set(mapped.channels.map(channel => channel.id)));
+            this.currentDiagnostics.set(site.idSite, new Set(channels.map(channel => channel.id)));
         }
+        const included = (state: StateDef): boolean => {
+            const { key, rest } = splitDeviceId(state.id);
+            return (
+                !this.filter.excludesDevice(key, labels?.get(`diagnostics.${key}`)) &&
+                !this.filter.excludesValue(key, rest, textOf(state.common.name))
+            );
+        };
 
         await this.states.ensureChannel(`${prefix}.diagnostics`, "Diagnostics (all values reported by VRM)");
-        const labels = this.deviceLabels.get(site.idSite);
-        for (const channel of mapped.channels) {
+        for (const channel of channels) {
             await this.states.ensureChannel(`${prefix}.${channel.id}`, labels?.get(channel.id) ?? channel.name);
         }
-        for (const state of mapped.states) {
+        for (const state of mapped.states.filter(included)) {
             await this.states.setState(prefix, state);
         }
 
         // default on, also for instances created before the option existed
         if (this.config.phaseSums !== false) {
-            const sums = mapPhaseSums(records);
+            const sums = mapPhaseSums(records).filter(included);
             for (const channel of new Set(sums.map(sum => sum.id.slice(0, sum.id.lastIndexOf("."))))) {
                 await this.states.ensureChannel(`${prefix}.${channel}`, "Sums over L1-L3");
             }

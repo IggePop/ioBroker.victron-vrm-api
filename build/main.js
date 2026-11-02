@@ -23,6 +23,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
 var import_cleanup = require("./lib/cleanup");
+var import_filter = require("./lib/filter");
 var import_alarms = require("./lib/mappers/alarms");
 var import_diagnostics = require("./lib/mappers/diagnostics");
 var import_energy = require("./lib/mappers/energy");
@@ -45,6 +46,14 @@ function clamp(value, min, max, fallback) {
   }
   return Math.min(Math.max(num, min), max);
 }
+function splitDeviceId(id) {
+  const [, key, ...rest] = id.split(".");
+  return { key, rest: rest.join(".") };
+}
+function textOf(name) {
+  var _a;
+  return typeof name === "string" ? name : (_a = name == null ? void 0 : name.en) != null ? _a : "";
+}
 function errorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
@@ -65,6 +74,8 @@ class VictronVrmApi extends utils.Adapter {
   currentDevices = /* @__PURE__ */ new Map();
   currentDiagnostics = /* @__PURE__ */ new Map();
   cleanupDone = false;
+  /** Exclusion list for devices and diagnostics values */
+  filter = (0, import_filter.createFilter)("");
   initTimer;
   initFailures = 0;
   /** Last error message per installation, used to avoid log spam */
@@ -87,6 +98,7 @@ class VictronVrmApi extends utils.Adapter {
   async onReady() {
     var _a;
     this.states = new import_state_manager.StateManager(this);
+    this.filter = (0, import_filter.createFilter)(this.config.exclude);
     await this.setState("info.connection", false, true);
     const token = ((_a = this.config.token) != null ? _a : "").trim();
     if (!token) {
@@ -265,7 +277,16 @@ class VictronVrmApi extends utils.Adapter {
   async cleanupObjects() {
     try {
       const prefix = `${this.namespace}.`;
-      const ids = Object.keys(await this.getAdapterObjectsAsync()).filter((id) => id.startsWith(prefix)).map((id) => id.slice(prefix.length));
+      const objects = await this.getAdapterObjectsAsync();
+      const ids = Object.keys(objects).filter((id) => id.startsWith(prefix)).map((id) => id.slice(prefix.length));
+      const excluded = (id) => {
+        const obj = objects[`${prefix}${id}`];
+        if ((obj == null ? void 0 : obj.type) !== "state") {
+          return false;
+        }
+        const { key, rest } = splitDeviceId(id.slice(id.indexOf(".") + 1));
+        return this.filter.excludesValue(key, rest, textOf(obj.common.name));
+      };
       const sites = /* @__PURE__ */ new Map();
       for (const site of this.installations) {
         sites.set(site.idSite, {
@@ -279,7 +300,7 @@ class VictronVrmApi extends utils.Adapter {
           }
         });
       }
-      for (const id of (0, import_cleanup.findObsolete)(ids, sites)) {
+      for (const id of (0, import_cleanup.findObsolete)(ids, sites, this.filter.empty ? void 0 : excluded)) {
         this.log.info(`Deleting obsolete object ${id}`);
         await this.delObjectAsync(id, { recursive: true });
         this.states.forget(id);
@@ -311,15 +332,21 @@ class VictronVrmApi extends utils.Adapter {
     const prefix = String(site.idSite);
     const mapped = (0, import_overview.mapOverview)(devices);
     this.deviceLabels.set(site.idSite, mapped.labels);
+    const channels = mapped.channels.filter(
+      (channel) => !this.filter.excludesDevice(splitDeviceId(channel.id).key, channel.name)
+    );
+    const keys = new Set(channels.map((channel) => splitDeviceId(channel.id).key));
     if (mapped.channels.length) {
-      this.currentDevices.set(site.idSite, new Set(mapped.channels.map((channel) => channel.id)));
+      this.currentDevices.set(site.idSite, new Set(channels.map((channel) => channel.id)));
     }
     await this.states.ensureChannel(`${prefix}.devices`, "Devices");
-    for (const channel of mapped.channels) {
+    for (const channel of channels) {
       await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
     }
     for (const state of mapped.states) {
-      await this.states.setState(prefix, state);
+      if (keys.has(splitDeviceId(state.id).key)) {
+        await this.states.setState(prefix, state);
+      }
     }
   }
   /**
@@ -442,19 +469,26 @@ class VictronVrmApi extends utils.Adapter {
     var _a, _b;
     const prefix = String(site.idSite);
     const mapped = (0, import_diagnostics.mapDiagnostics)(records);
-    if (mapped.channels.length) {
-      this.currentDiagnostics.set(site.idSite, new Set(mapped.channels.map((channel) => channel.id)));
-    }
-    await this.states.ensureChannel(`${prefix}.diagnostics`, "Diagnostics (all values reported by VRM)");
     const labels = this.deviceLabels.get(site.idSite);
-    for (const channel of mapped.channels) {
+    const channels = mapped.channels.filter(
+      (channel) => !this.filter.excludesDevice(splitDeviceId(channel.id).key, labels == null ? void 0 : labels.get(channel.id))
+    );
+    if (mapped.channels.length) {
+      this.currentDiagnostics.set(site.idSite, new Set(channels.map((channel) => channel.id)));
+    }
+    const included = (state) => {
+      const { key, rest } = splitDeviceId(state.id);
+      return !this.filter.excludesDevice(key, labels == null ? void 0 : labels.get(`diagnostics.${key}`)) && !this.filter.excludesValue(key, rest, textOf(state.common.name));
+    };
+    await this.states.ensureChannel(`${prefix}.diagnostics`, "Diagnostics (all values reported by VRM)");
+    for (const channel of channels) {
       await this.states.ensureChannel(`${prefix}.${channel.id}`, (_a = labels == null ? void 0 : labels.get(channel.id)) != null ? _a : channel.name);
     }
-    for (const state of mapped.states) {
+    for (const state of mapped.states.filter(included)) {
       await this.states.setState(prefix, state);
     }
     if (this.config.phaseSums !== false) {
-      const sums = (0, import_phase_sums.mapPhaseSums)(records);
+      const sums = (0, import_phase_sums.mapPhaseSums)(records).filter(included);
       for (const channel of new Set(sums.map((sum) => sum.id.slice(0, sum.id.lastIndexOf("."))))) {
         await this.states.ensureChannel(`${prefix}.${channel}`, "Sums over L1-L3");
       }

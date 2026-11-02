@@ -34,6 +34,7 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
   hourly forecast as JSON.
 - Provides the alarms from the VRM alarm log: number and list of active alarms, the newest alarm and the last 25
   entries as JSON.
+- Lets you exclude devices and values with simple patterns, and cleans up obsolete objects on request.
 - Optionally adds sums over L1–L3 for power, current and energy values.
 - Uses the time at which VRM logged each value as the state timestamp, so history adapters (History, InfluxDB,
   SQL) store the real point in time, not the time of the poll.
@@ -66,6 +67,7 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 | Read alarms | on | Alarm log, see below |
 | Alarms interval | 5 min | How often the alarm log is fetched (1–1440 min) |
 | Calculate phase sums | on | Creates totals over L1–L3, see below |
+| Exclude devices and values | – | Exclusion list, see below |
 | Delete obsolete objects | off | Cleans up the object tree at start, see below |
 | Request timeout | 30 s | HTTP timeout per request |
 
@@ -197,6 +199,31 @@ The adapter detects the phase from the name or the D-Bus path, and the quantity 
 (W, A, kWh). A total is created as soon as at least two phases are present.
 `native.sources` of each sum state lists the codes it was built from.
 
+### Excluding devices and values
+
+A single installation easily reports more than 500 diagnostics values. The exclusion list keeps the object tree
+manageable. Enter one pattern per line. `*` matches any text, `?` a single character. Case does not matter, and
+lines starting with `#` are comments. Each pattern is compared with:
+
+| Compared with | Example pattern | Excludes |
+|---|---|---|
+| Device folder | `gateway_0`, `pv_inverter_*` | the whole device |
+| Device name from VRM | `MultiPlus*` | the whole device |
+| Device folder and value id | `ve_bus_system_276.v*` | single values of one device |
+| Name of the value | `*alarm*`, `Phase rotation` | values of all devices with that name |
+
+```
+# firmware and VE.Bus details of the Multi
+ve_bus_system_276.v*
+# alarm and warning flags (the alarm log is in alarms.*)
+*alarm*
+*warning*
+```
+
+The list applies to `diagnostics.*`, the phase sums (e.g. `ve_bus_system_276.sum.*`) and the device list
+`devices.*`. The live values are always kept. Values that already exist are only removed when
+**Delete obsolete objects** is enabled.
+
 ### Deleting obsolete objects
 
 The adapter never deletes objects on its own. With **Delete obsolete objects** enabled, it removes at every start,
@@ -205,7 +232,8 @@ after the first successful poll:
 - installations that are no longer selected or no longer in the account,
 - devices (`devices.*`, `diagnostics.*`) that VRM no longer reports, e.g. after removing them in the VRM device list,
 - the `energy`, `forecast` and `alarms` folders when the matching option is disabled,
-- the `sum` folders when the phase sums are disabled.
+- the `sum` folders when the phase sums are disabled,
+- devices and values that match the exclusion list.
 
 Each deleted object is logged. Data already stored by History, InfluxDB or SQL is kept, but the settings of the
 deleted states (e.g. history logging) are lost. If VRM returns an empty device list, no devices are deleted.
@@ -262,6 +290,7 @@ or supported by Victron Energy. It uses the public VRM API.
 -->
 ### **WORK IN PROGRESS**
 * (IggePop) option to delete obsolete objects (deselected installations, removed devices, disabled options)
+* (IggePop) exclusion list for devices and diagnostics values
 
 ### 0.1.0 (2026-11-02)
 * (IggePop) initial release

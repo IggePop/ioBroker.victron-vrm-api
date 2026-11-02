@@ -28,6 +28,8 @@ declare global {
             phaseSums: boolean;
             /** Delete objects of deselected installations, removed devices and disabled options at start */
             cleanupObjects: boolean;
+            /** Exclusion list for devices and diagnostics values, one pattern per line */
+            exclude: string;
             /** HTTP request timeout in seconds */
             requestTimeout: number;
         }

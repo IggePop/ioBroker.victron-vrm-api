@@ -102,6 +102,7 @@
         "staleMinutes": 30,
         "phaseSums": true,
         "cleanupObjects": false,
+        "exclude": "",
         "requestTimeout": 30
     },
     "encryptedNative": ["token"],

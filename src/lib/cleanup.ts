@@ -19,8 +19,13 @@ export interface SiteExpectation {
  *
  * @param ids - All object ids of the adapter instance, relative to the namespace
  * @param sites - Polled installations (idSite) and what should exist below them
+ * @param excluded - Returns true for diagnostics values that are excluded by the filter
  */
-export function findObsolete(ids: string[], sites: Map<number, SiteExpectation>): string[] {
+export function findObsolete(
+    ids: string[],
+    sites: Map<number, SiteExpectation>,
+    excluded?: (id: string) => boolean,
+): string[] {
     const result: string[] = [];
     const add = (id: string): void => {
         if (!result.includes(id)) {
@@ -50,6 +55,8 @@ export function findObsolete(ids: string[], sites: Map<number, SiteExpectation>)
                 add(parts.slice(0, 3).join("."));
             } else if (sub === "sum" && !site.phaseSums) {
                 add(parts.slice(0, 4).join("."));
+            } else if (sub !== undefined && excluded?.(id)) {
+                add(id);
             }
         }
     }

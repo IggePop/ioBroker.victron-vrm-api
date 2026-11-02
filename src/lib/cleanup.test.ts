@@ -79,6 +79,19 @@ describe("cleanup", () => {
         expect(findObsolete(IDS, sites)).to.deep.equal(["1.diagnostics.grid_meter_40.sum"]);
     });
 
+    it("removes values excluded by the filter", () => {
+        const sites = new Map([
+            [1, site()],
+            [2, site({ diagnostics: undefined })],
+        ]);
+        const excluded = (id: string): boolean => id.endsWith(".g1p") || id === "1.diagnostics.grid_meter_40.sum.Grid";
+        expect(findObsolete(IDS, sites, excluded)).to.deep.equal([
+            "1.diagnostics.grid_meter_40.g1p",
+            "1.diagnostics.grid_meter_40.sum.Grid",
+            "1.diagnostics.old_meter_41.g1p",
+        ]);
+    });
+
     it("removes the folders of disabled options", () => {
         const sites = new Map([
             [1, site({ folders: { energy: false, forecast: true, alarms: false } })],

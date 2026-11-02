@@ -23,7 +23,7 @@ __export(cleanup_exports, {
 });
 module.exports = __toCommonJS(cleanup_exports);
 const OPTIONAL_FOLDERS = ["energy", "forecast", "alarms"];
-function findObsolete(ids, sites) {
+function findObsolete(ids, sites, excluded) {
   const result = [];
   const add = (id) => {
     if (!result.includes(id)) {
@@ -51,6 +51,8 @@ function findObsolete(ids, sites) {
         add(parts.slice(0, 3).join("."));
       } else if (sub === "sum" && !site.phaseSums) {
         add(parts.slice(0, 4).join("."));
+      } else if (sub !== void 0 && (excluded == null ? void 0 : excluded(id))) {
+        add(id);
       }
     }
   }
