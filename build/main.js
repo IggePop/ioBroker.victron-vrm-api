@@ -22,6 +22,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var utils = __toESM(require("@iobroker/adapter-core"));
+var import_cleanup = require("./lib/cleanup");
 var import_alarms = require("./lib/mappers/alarms");
 var import_diagnostics = require("./lib/mappers/diagnostics");
 var import_energy = require("./lib/mappers/energy");
@@ -60,6 +61,10 @@ class VictronVrmApi extends utils.Adapter {
   forecastCache = /* @__PURE__ */ new Map();
   /** Display names of the diagnostics channels per installation, from the system overview */
   deviceLabels = /* @__PURE__ */ new Map();
+  /** Channel ids of the devices VRM currently reports, per installation (for the cleanup) */
+  currentDevices = /* @__PURE__ */ new Map();
+  currentDiagnostics = /* @__PURE__ */ new Map();
+  cleanupDone = false;
   initTimer;
   initFailures = 0;
   /** Last error message per installation, used to avoid log spam */
@@ -248,6 +253,40 @@ class VictronVrmApi extends utils.Adapter {
     } else if (firstError) {
       throw firstError;
     }
+    if (successCount > 0 && !this.cleanupDone && this.config.cleanupObjects) {
+      this.cleanupDone = true;
+      await this.cleanupObjects();
+    }
+  }
+  /**
+   * Deletes objects of installations that are no longer polled, of devices that VRM no longer reports,
+   * of disabled options and the phase sums when they are disabled.
+   */
+  async cleanupObjects() {
+    try {
+      const prefix = `${this.namespace}.`;
+      const ids = Object.keys(await this.getAdapterObjectsAsync()).filter((id) => id.startsWith(prefix)).map((id) => id.slice(prefix.length));
+      const sites = /* @__PURE__ */ new Map();
+      for (const site of this.installations) {
+        sites.set(site.idSite, {
+          devices: this.currentDevices.get(site.idSite),
+          diagnostics: this.currentDiagnostics.get(site.idSite),
+          phaseSums: this.config.phaseSums !== false,
+          folders: {
+            energy: this.config.energyStats !== false,
+            forecast: this.config.forecast !== false,
+            alarms: this.config.alarms !== false
+          }
+        });
+      }
+      for (const id of (0, import_cleanup.findObsolete)(ids, sites)) {
+        this.log.info(`Deleting obsolete object ${id}`);
+        await this.delObjectAsync(id, { recursive: true });
+        this.states.forget(id);
+      }
+    } catch (error) {
+      this.log.warn(`Cleanup of obsolete objects failed: ${errorMessage(error)}`);
+    }
   }
   /**
    * Fetches the device list of all installations. Errors are only logged,
@@ -272,6 +311,9 @@ class VictronVrmApi extends utils.Adapter {
     const prefix = String(site.idSite);
     const mapped = (0, import_overview.mapOverview)(devices);
     this.deviceLabels.set(site.idSite, mapped.labels);
+    if (mapped.channels.length) {
+      this.currentDevices.set(site.idSite, new Set(mapped.channels.map((channel) => channel.id)));
+    }
     await this.states.ensureChannel(`${prefix}.devices`, "Devices");
     for (const channel of mapped.channels) {
       await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
@@ -400,6 +442,9 @@ class VictronVrmApi extends utils.Adapter {
     var _a, _b;
     const prefix = String(site.idSite);
     const mapped = (0, import_diagnostics.mapDiagnostics)(records);
+    if (mapped.channels.length) {
+      this.currentDiagnostics.set(site.idSite, new Set(mapped.channels.map((channel) => channel.id)));
+    }
     await this.states.ensureChannel(`${prefix}.diagnostics`, "Diagnostics (all values reported by VRM)");
     const labels = this.deviceLabels.get(site.idSite);
     for (const channel of mapped.channels) {

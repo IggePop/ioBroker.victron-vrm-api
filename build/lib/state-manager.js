@@ -59,6 +59,18 @@ class StateManager {
   async setValue(id, value, common) {
     await this.setState("", { id, common, value });
   }
+  /**
+   * Forgets an object and everything below it, so it is created again when needed
+   *
+   * @param id - Id of the deleted object
+   */
+  forget(id) {
+    for (const known of this.known.keys()) {
+      if (known === id || known.startsWith(`${id}.`)) {
+        this.known.delete(known);
+      }
+    }
+  }
   async ensureObject(id, obj) {
     var _a;
     const name = JSON.stringify((_a = obj.common) == null ? void 0 : _a.name);

@@ -21,5 +21,7 @@
     "Forecast interval": "Forecast interval",
     "Read alarms": "Read alarms",
     "alarmsHelp": "Number and list of the active alarms, the newest alarm and the last 25 entries of the VRM alarm log as JSON.",
-    "Alarms interval": "Alarms interval"
+    "Alarms interval": "Alarms interval",
+    "Delete obsolete objects": "Delete obsolete objects",
+    "cleanupHelp": "At every start, deletes the objects of installations that are no longer polled, of devices that VRM no longer reports, of disabled options and the phase sums when they are disabled. History data of deleted states is kept, but their settings (e.g. history) are lost."
 }

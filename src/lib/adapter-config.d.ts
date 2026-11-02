@@ -26,6 +26,8 @@ declare global {
             alarmsInterval: number;
             /** Create sums over L1-L3 for power, current and energy values */
             phaseSums: boolean;
+            /** Delete objects of deselected installations, removed devices and disabled options at start */
+            cleanupObjects: boolean;
             /** HTTP request timeout in seconds */
             requestTimeout: number;
         }

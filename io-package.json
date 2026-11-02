@@ -101,6 +101,7 @@
         "alarmsInterval": 5,
         "staleMinutes": 30,
         "phaseSums": true,
+        "cleanupObjects": false,
         "requestTimeout": 30
     },
     "encryptedNative": ["token"],

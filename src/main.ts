@@ -3,6 +3,7 @@
  */
 
 import * as utils from "@iobroker/adapter-core";
+import { findObsolete, type SiteExpectation } from "./lib/cleanup";
 import { ALARM_LOG_COUNT, mapAlarms } from "./lib/mappers/alarms";
 import { mapDiagnostics } from "./lib/mappers/diagnostics";
 import { ENERGY_CODES, ENERGY_PERIODS, mapEnergy } from "./lib/mappers/energy";
@@ -49,6 +50,10 @@ class VictronVrmApi extends utils.Adapter {
     private forecastCache = new Map<number, { records: Parameters<typeof mapForecast>[0]; fetched: number }>();
     /** Display names of the diagnostics channels per installation, from the system overview */
     private deviceLabels = new Map<number, Map<string, string>>();
+    /** Channel ids of the devices VRM currently reports, per installation (for the cleanup) */
+    private currentDevices = new Map<number, Set<string>>();
+    private currentDiagnostics = new Map<number, Set<string>>();
+    private cleanupDone = false;
     private initTimer: ioBroker.Timeout | undefined;
     private initFailures = 0;
     /** Last error message per installation, used to avoid log spam */
@@ -260,6 +265,45 @@ class VictronVrmApi extends utils.Adapter {
         } else if (firstError) {
             throw firstError;
         }
+
+        // once per start, after the first successful round, so the current device lists are known
+        if (successCount > 0 && !this.cleanupDone && this.config.cleanupObjects) {
+            this.cleanupDone = true;
+            await this.cleanupObjects();
+        }
+    }
+
+    /**
+     * Deletes objects of installations that are no longer polled, of devices that VRM no longer reports,
+     * of disabled options and the phase sums when they are disabled.
+     */
+    private async cleanupObjects(): Promise<void> {
+        try {
+            const prefix = `${this.namespace}.`;
+            const ids = Object.keys(await this.getAdapterObjectsAsync())
+                .filter(id => id.startsWith(prefix))
+                .map(id => id.slice(prefix.length));
+            const sites = new Map<number, SiteExpectation>();
+            for (const site of this.installations) {
+                sites.set(site.idSite, {
+                    devices: this.currentDevices.get(site.idSite),
+                    diagnostics: this.currentDiagnostics.get(site.idSite),
+                    phaseSums: this.config.phaseSums !== false,
+                    folders: {
+                        energy: this.config.energyStats !== false,
+                        forecast: this.config.forecast !== false,
+                        alarms: this.config.alarms !== false,
+                    },
+                });
+            }
+            for (const id of findObsolete(ids, sites)) {
+                this.log.info(`Deleting obsolete object ${id}`);
+                await this.delObjectAsync(id, { recursive: true });
+                this.states.forget(id);
+            }
+        } catch (error) {
+            this.log.warn(`Cleanup of obsolete objects failed: ${errorMessage(error)}`);
+        }
     }
 
     /**
@@ -286,6 +330,10 @@ class VictronVrmApi extends utils.Adapter {
         const prefix = String(site.idSite);
         const mapped = mapOverview(devices);
         this.deviceLabels.set(site.idSite, mapped.labels);
+        // an empty list is more likely a hiccup than an installation without devices
+        if (mapped.channels.length) {
+            this.currentDevices.set(site.idSite, new Set(mapped.channels.map(channel => channel.id)));
+        }
 
         await this.states.ensureChannel(`${prefix}.devices`, "Devices");
         for (const channel of mapped.channels) {
@@ -430,6 +478,9 @@ class VictronVrmApi extends utils.Adapter {
     ): Promise<void> {
         const prefix = String(site.idSite);
         const mapped = mapDiagnostics(records);
+        if (mapped.channels.length) {
+            this.currentDiagnostics.set(site.idSite, new Set(mapped.channels.map(channel => channel.id)));
+        }
 
         await this.states.ensureChannel(`${prefix}.diagnostics`, "Diagnostics (all values reported by VRM)");
         const labels = this.deviceLabels.get(site.idSite);

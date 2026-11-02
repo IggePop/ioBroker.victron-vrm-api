@@ -49,6 +49,19 @@ export class StateManager {
         await this.setState("", { id, common, value });
     }
 
+    /**
+     * Forgets an object and everything below it, so it is created again when needed
+     *
+     * @param id - Id of the deleted object
+     */
+    public forget(id: string): void {
+        for (const known of this.known.keys()) {
+            if (known === id || known.startsWith(`${id}.`)) {
+                this.known.delete(known);
+            }
+        }
+    }
+
     private async ensureObject(id: string, obj: ioBroker.SettableObject): Promise<void> {
         const name = JSON.stringify(obj.common?.name);
         if (this.known.get(id) === name) {

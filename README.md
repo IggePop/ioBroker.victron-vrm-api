@@ -66,6 +66,7 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 | Read alarms | on | Alarm log, see below |
 | Alarms interval | 5 min | How often the alarm log is fetched (1–1440 min) |
 | Calculate phase sums | on | Creates totals over L1–L3, see below |
+| Delete obsolete objects | off | Cleans up the object tree at start, see below |
 | Request timeout | 30 s | HTTP timeout per request |
 
 > **How fresh is the data?** The GX device sends its data to VRM at its *log interval*. The default is 15 minutes.
@@ -196,6 +197,19 @@ The adapter detects the phase from the name or the D-Bus path, and the quantity 
 (W, A, kWh). A total is created as soon as at least two phases are present.
 `native.sources` of each sum state lists the codes it was built from.
 
+### Deleting obsolete objects
+
+The adapter never deletes objects on its own. With **Delete obsolete objects** enabled, it removes at every start,
+after the first successful poll:
+
+- installations that are no longer selected or no longer in the account,
+- devices (`devices.*`, `diagnostics.*`) that VRM no longer reports, e.g. after removing them in the VRM device list,
+- the `energy`, `forecast` and `alarms` folders when the matching option is disabled,
+- the `sum` folders when the phase sums are disabled.
+
+Each deleted object is logged. Data already stored by History, InfluxDB or SQL is kept, but the settings of the
+deleted states (e.g. history logging) are lost. If VRM returns an empty device list, no devices are deleted.
+
 ## Planned
 
 - Dynamic ESS (read only)
@@ -246,6 +260,9 @@ or supported by Victron Energy. It uses the public VRM API.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+* (IggePop) option to delete obsolete objects (deselected installations, removed devices, disabled options)
+
 ### 0.1.0 (2026-11-02)
 * (IggePop) initial release
 * (IggePop) diagnostics of all installations of a VRM account with well-known live values
