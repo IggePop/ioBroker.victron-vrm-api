@@ -107,6 +107,71 @@
     },
     "encryptedNative": ["token"],
     "protectedNative": ["token"],
+    "notifications": [
+        {
+            "scope": "victron-vrm-api",
+            "name": {
+                "en": "Victron VRM API",
+                "de": "Victron VRM API",
+                "ru": "Victron VRM API",
+                "pt": "Victron VRM API",
+                "nl": "Victron VRM API",
+                "fr": "Victron VRM API",
+                "it": "Victron VRM API",
+                "es": "Victron VRM API",
+                "pl": "Victron VRM API",
+                "uk": "Victron VRM API",
+                "zh-cn": "Victron VRM API"
+            },
+            "description": {
+                "en": "Notifications of the Victron VRM API adapter",
+                "de": "Benachrichtigungen des Adapters Victron VRM API",
+                "ru": "Уведомления адаптера Victron VRM API",
+                "pt": "Notificações do adaptador Victron VRM API",
+                "nl": "Meldingen van de adapter Victron VRM API",
+                "fr": "Notifications de l'adaptateur Victron VRM API",
+                "it": "Notifiche dell'adattatore Victron VRM API",
+                "es": "Notificaciones del adaptador Victron VRM API",
+                "pl": "Powiadomienia adaptera Victron VRM API",
+                "uk": "Сповіщення адаптера Victron VRM API",
+                "zh-cn": "Victron VRM API 适配器的通知"
+            },
+            "categories": [
+                {
+                    "category": "tokenInvalid",
+                    "name": {
+                        "en": "VRM access token invalid",
+                        "de": "VRM-Zugriffstoken ungültig",
+                        "ru": "Токен доступа VRM недействителен",
+                        "pt": "Token de acesso VRM inválido",
+                        "nl": "VRM-toegangstoken ongeldig",
+                        "fr": "Jeton d'accès VRM invalide",
+                        "it": "Token di accesso VRM non valido",
+                        "es": "Token de acceso de VRM no válido",
+                        "pl": "Nieprawidłowy token dostępu VRM",
+                        "uk": "Недійсний маркер доступу VRM",
+                        "zh-cn": "VRM 访问令牌无效"
+                    },
+                    "description": {
+                        "en": "VRM rejected the access token, the adapter does not read any data. Create a new token in VRM (Preferences → Integrations → Access tokens) and enter it in the instance settings.",
+                        "de": "VRM hat den Zugriffstoken abgelehnt, der Adapter liest keine Daten mehr. Lege in VRM einen neuen Token an (Einstellungen → Integrationen → Zugriffstoken) und trage ihn in den Instanzeinstellungen ein.",
+                        "ru": "VRM отклонил токен доступа, адаптер больше не считывает данные. Создайте новый токен в VRM (Preferences → Integrations → Access tokens) и введите его в настройках экземпляра.",
+                        "pt": "O VRM rejeitou o token de acesso, o adaptador já não lê dados. Crie um novo token no VRM (Preferences → Integrations → Access tokens) e introduza-o nas definições da instância.",
+                        "nl": "VRM heeft het toegangstoken geweigerd, de adapter leest geen gegevens meer. Maak in VRM een nieuw token aan (Preferences → Integrations → Access tokens) en voer het in bij de instantie-instellingen.",
+                        "fr": "VRM a refusé le jeton d'accès, l'adaptateur ne lit plus de données. Créez un nouveau jeton dans VRM (Preferences → Integrations → Access tokens) et saisissez-le dans les paramètres de l'instance.",
+                        "it": "VRM ha rifiutato il token di accesso, l'adattatore non legge più dati. Crea un nuovo token in VRM (Preferences → Integrations → Access tokens) e inseriscilo nelle impostazioni dell'istanza.",
+                        "es": "VRM ha rechazado el token de acceso, el adaptador ya no lee datos. Cree un token nuevo en VRM (Preferences → Integrations → Access tokens) e introdúzcalo en la configuración de la instancia.",
+                        "pl": "VRM odrzucił token dostępu, adapter nie odczytuje już danych. Utwórz nowy token w VRM (Preferences → Integrations → Access tokens) i wprowadź go w ustawieniach instancji.",
+                        "uk": "VRM відхилив маркер доступу, адаптер більше не зчитує дані. Створіть новий маркер у VRM (Preferences → Integrations → Access tokens) і введіть його в налаштуваннях екземпляра.",
+                        "zh-cn": "VRM 拒绝了访问令牌，适配器不再读取数据。请在 VRM 中创建新令牌（Preferences → Integrations → Access tokens），并在实例设置中输入。"
+                    },
+                    "severity": "alert",
+                    "regex": [],
+                    "limit": 1
+                }
+            ]
+        }
+    ],
     "objects": [],
     "instanceObjects": [
         {

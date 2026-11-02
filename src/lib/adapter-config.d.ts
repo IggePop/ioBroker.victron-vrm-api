@@ -33,6 +33,11 @@ declare global {
             /** HTTP request timeout in seconds */
             requestTimeout: number;
         }
+
+        /** Notification scope of this adapter, see "notifications" in io-package.json */
+        interface NotificationScopes {
+            "victron-vrm-api": "tokenInvalid";
+        }
     }
 }
 

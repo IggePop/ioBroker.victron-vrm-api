@@ -151,6 +151,7 @@ class VictronVrmApi extends utils.Adapter {
       await this.setState("info.connection", false, true);
       if (error instanceof import_vrm_client.VrmApiError && error.isAuthError) {
         this.log.error(`VRM rejected the access token: ${error.message}. Please check the configuration.`);
+        await this.notifyTokenInvalid(error.message);
         return;
       }
       this.initFailures++;
@@ -160,6 +161,22 @@ class VictronVrmApi extends utils.Adapter {
         this.initTimer = void 0;
         void this.initialize();
       }, delay);
+    }
+  }
+  /**
+   * Shows a notification in admin (and the notification-manager) that the token is no longer accepted
+   *
+   * @param reason - Error text of VRM
+   */
+  async notifyTokenInvalid(reason) {
+    try {
+      await this.registerNotification(
+        "victron-vrm-api",
+        "tokenInvalid",
+        `${this.namespace}: VRM rejected the access token (${reason}). No data is read until a valid token is entered.`
+      );
+    } catch (error) {
+      this.log.debug(`Could not register notification: ${errorMessage(error)}`);
     }
   }
   filterInstallations(all) {
@@ -255,6 +272,7 @@ class VictronVrmApi extends utils.Adapter {
           this.stopPolling();
           await this.setState("info.connection", false, true);
           this.log.error(`VRM rejected the access token: ${error.message}. Polling stopped.`);
+          await this.notifyTokenInvalid(error.message);
           return;
         }
         firstError != null ? firstError : firstError = error instanceof Error ? error : new Error(errorMessage(error));

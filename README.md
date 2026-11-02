@@ -39,6 +39,8 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 - Uses the time at which VRM logged each value as the state timestamp, so history adapters (History, InfluxDB,
   SQL) store the real point in time, not the time of the poll.
 - Shows whether the data in VRM is still fresh (`info.dataStale`).
+- Shows an ioBroker notification in admin when VRM rejects the access token. The notification-manager adapter can
+  forward it, e.g. to Telegram or e-mail.
 - Answers read-only VRM requests from scripts (`sendTo`), see below.
 - Sends requests one after another, honours the VRM rate limit (HTTP 429) and backs off when errors occur.
 
@@ -325,6 +327,7 @@ or supported by Victron Energy. It uses the public VRM API.
 * (IggePop) no phase sums for setpoints and limits (e.g. Hub4 power setpoint, Max Feedin Power)
 * (IggePop) sendTo "get" for own read-only VRM requests from scripts
 * (IggePop) button "Test connection" in the instance settings
+* (IggePop) ioBroker notification when VRM rejects the access token
 
 ### 0.1.0 (2026-11-02)
 * (IggePop) initial release
