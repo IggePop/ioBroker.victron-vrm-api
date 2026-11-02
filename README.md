@@ -246,10 +246,14 @@ or supported by Victron Energy. It uses the public VRM API.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.1.0 (2026-11-02)
 * (IggePop) initial release
-* (IggePop) diagnostics of all installations of a VRM account, live values, phase sums
+* (IggePop) diagnostics of all installations of a VRM account with well-known live values
+* (IggePop) device list with product name and firmware, VRM device names as folder names
+* (IggePop) energy statistics for today, week, month and year
+* (IggePop) solar yield and consumption forecast
+* (IggePop) alarms from the VRM alarm log
+* (IggePop) optional sums over L1-L3, VRM timestamps as state timestamps
 
 ## License
 MIT License

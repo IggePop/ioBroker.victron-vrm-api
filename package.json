@@ -1,6 +1,6 @@
 {
   "name": "iobroker.victron-vrm-api",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Reads data of Victron installations from the VRM portal API",
   "author": {
     "name": "IggePop",
