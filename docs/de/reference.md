@@ -41,7 +41,8 @@ victron-vrm-api.0
    ├─ energy
    │  └─ today | week | month | year
    │     ├─ solarYield, consumption, gridImport, gridExport,
-   │     │  batteryCharged, batteryDischarged (genset, falls vorhanden)
+   │     │  batteryCharged, batteryDischarged (genset, falls vorhanden),
+   │     │  autarky, selfConsumption (%)
    │     └─ flows.*           pvToConsumers, pvToBattery, pvToGrid, gridToConsumers, …
    ├─ forecast              solar…/consumption… Today, RemainingToday, Tomorrow, PowerNow; hourly (JSON)
    ├─ alarms                count, active, activeText, activeList, lastText, lastStarted, lastCleared, history
@@ -86,6 +87,7 @@ zurück. Ein Datenpunkt wird nur angelegt, wenn die Anlage den Wert meldet.
 | `live.pvPower` | W | PV-Leistung gesamt |
 | `live.gridPower` | W | Netzleistung, Summe aller Phasen (positiv = Bezug) |
 | `live.consumption` | W | AC-Verbrauch, Summe aller Phasen |
+| `live.batteryTimeToGo` | h | Restlaufzeit der Batterie, wie sie der Batteriemonitor berechnet, leer während des Ladens |
 
 ## Energiestatistik
 
@@ -104,6 +106,17 @@ entsprechen denen in VRM.
 
 Die Summen stimmen mit denen in VRM überein (Solarertrag, Verbrauch, Energie aus dem und ins Netz). Flüsse ohne
 Daten, z. B. ein nicht vorhandener Generator, werden nicht angelegt.
+
+Zusätzlich gibt es pro Zeitraum zwei Kennzahlen in Prozent:
+
+| Datenpunkt | Berechnung | Bedeutung |
+|---|---|---|
+| `autarky` | 1 − gridImport / consumption | Autarkiegrad: Anteil des Verbrauchs, der nicht aus dem Netz gedeckt wird |
+| `selfConsumption` | 1 − gridExport / solarYield | Eigenverbrauchsquote: Anteil des PV-Ertrags, der vor Ort genutzt statt eingespeist wird |
+
+Beide sind auf 0–100 % begrenzt und leer, wenn es nichts zu teilen gibt, z. B. `selfConsumption` vor
+Sonnenaufgang. Netzstrom, der in die Batterie geladen wird, zählt als Netzbezug, Batteriestrom, der ins Netz geht,
+als Einspeisung. So fällt keine der beiden Kennzahlen zu günstig aus.
 
 ## Prognose
 

@@ -66,4 +66,25 @@ describe("live mapper", () => {
         const values = valuesOf([record("system", "/Dc/Battery/Soc", null)]);
         expect(values).to.deep.equal({});
     });
+
+    describe("batteryTimeToGo", () => {
+        const ttg = (r: VrmDiagnosticRecord): ioBroker.StateValue | undefined => valuesOf([r])["live.batteryTimeToGo"];
+
+        it("converts seconds (D-Bus) to hours", () => {
+            expect(ttg(record("system", "/Dc/Battery/TimeToGo", 9000))).to.equal(2.5);
+        });
+
+        it("keeps hours when VRM reports hours", () => {
+            expect(ttg({ ...record("battery", "/TimeToGo", 12.345), formatWithUnit: "%.2F h" })).to.equal(12.35);
+        });
+
+        it("is null while charging (no value)", () => {
+            expect(ttg(record("system", "/Dc/Battery/TimeToGo", ""))).to.equal(null);
+            expect(ttg(record("system", "/Dc/Battery/TimeToGo", null))).to.equal(null);
+        });
+
+        it("is not created without a battery monitor", () => {
+            expect(valuesOf([record("system", "/Dc/Battery/Soc", 80)])).to.not.have.property("live.batteryTimeToGo");
+        });
+    });
 });

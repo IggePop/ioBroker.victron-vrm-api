@@ -20,7 +20,8 @@ var energy_exports = {};
 __export(energy_exports, {
   ENERGY_CODES: () => ENERGY_CODES,
   ENERGY_PERIODS: () => ENERGY_PERIODS,
-  mapEnergy: () => mapEnergy
+  mapEnergy: () => mapEnergy,
+  ratio: () => ratio
 });
 module.exports = __toCommonJS(energy_exports);
 const FLOWS = {
@@ -57,6 +58,13 @@ const ENERGY_CODES = Object.values(FLOWS).map((flow) => flow.code);
 function round(value) {
   return Math.round(value * 1e3) / 1e3;
 }
+function ratio(part, total) {
+  if (!(total > 0)) {
+    return null;
+  }
+  const percent = (1 - part / total) * 100;
+  return Math.round(Math.min(100, Math.max(0, percent)) * 10) / 10;
+}
 function mapEnergy(records) {
   var _a;
   const periods = Object.keys(ENERGY_PERIODS).filter((p) => {
@@ -83,21 +91,47 @@ function mapEnergy(records) {
   for (const period of periods) {
     channels.push({ id: `energy.${period}`, name: ENERGY_PERIODS[period] });
     for (const total of TOTALS) {
-      if (total.optional && !total.flows.some((flow) => existing.has(flow))) {
+      if (total.optional && !total.flows.some((flow2) => existing.has(flow2))) {
         continue;
       }
-      const sum = total.flows.reduce((acc, flow) => {
+      const sum = total.flows.reduce((acc, flow2) => {
         var _a2;
-        return acc + ((_a2 = valueOf(period, flow)) != null ? _a2 : 0);
+        return acc + ((_a2 = valueOf(period, flow2)) != null ? _a2 : 0);
       }, 0);
       states.push({ id: `energy.${period}.${total.id}`, common: common(total.name), value: round(sum) });
     }
-    for (const flow of existing) {
+    const flow = (name) => {
+      var _a2;
+      return (_a2 = valueOf(period, name)) != null ? _a2 : 0;
+    };
+    const consumption = flow("pvToConsumers") + flow("gridToConsumers") + flow("batteryToConsumers") + flow("gensetToConsumers");
+    const solarYield = flow("pvToConsumers") + flow("pvToBattery") + flow("pvToGrid");
+    const percent = (name) => ({
+      name,
+      type: "number",
+      role: "value",
+      unit: "%",
+      min: 0,
+      max: 100,
+      read: true,
+      write: false
+    });
+    states.push({
+      id: `energy.${period}.autarky`,
+      common: percent("Self-sufficiency (share of consumption not covered by the grid)"),
+      value: ratio(flow("gridToConsumers") + flow("gridToBattery"), consumption)
+    });
+    states.push({
+      id: `energy.${period}.selfConsumption`,
+      common: percent("Self-consumption (share of PV yield not fed into the grid)"),
+      value: ratio(flow("pvToGrid") + flow("batteryToGrid"), solarYield)
+    });
+    for (const flow2 of existing) {
       states.push({
-        id: `energy.${period}.flows.${flow}`,
-        common: common(FLOWS[flow].name),
-        native: { code: FLOWS[flow].code },
-        value: round((_a = valueOf(period, flow)) != null ? _a : 0)
+        id: `energy.${period}.flows.${flow2}`,
+        common: common(FLOWS[flow2].name),
+        native: { code: FLOWS[flow2].code },
+        value: round((_a = valueOf(period, flow2)) != null ? _a : 0)
       });
     }
     if (existing.size) {
@@ -110,6 +144,7 @@ function mapEnergy(records) {
 0 && (module.exports = {
   ENERGY_CODES,
   ENERGY_PERIODS,
-  mapEnergy
+  mapEnergy,
+  ratio
 });
 //# sourceMappingURL=energy.js.map

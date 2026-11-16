@@ -41,7 +41,8 @@ victron-vrm-api.0
    ├─ energy
    │  └─ today | week | month | year
    │     ├─ solarYield, consumption, gridImport, gridExport,
-   │     │  batteryCharged, batteryDischarged (genset if present)
+   │     │  batteryCharged, batteryDischarged (genset if present),
+   │     │  autarky, selfConsumption (%)
    │     └─ flows.*           pvToConsumers, pvToBattery, pvToGrid, gridToConsumers, …
    ├─ forecast              solar…/consumption… Today, RemainingToday, Tomorrow, PowerNow; hourly (JSON)
    ├─ alarms                count, active, activeText, activeList, lastText, lastStarted, lastCleared, history
@@ -85,6 +86,7 @@ individual devices. A state is only created if the installation reports the valu
 | `live.pvPower` | W | PV power total |
 | `live.gridPower` | W | Grid power, sum of all phases (positive = import) |
 | `live.consumption` | W | AC consumption, sum of all phases |
+| `live.batteryTimeToGo` | h | Remaining runtime of the battery as calculated by the battery monitor, empty while charging |
 
 ## Energy statistics
 
@@ -103,6 +105,17 @@ periods as VRM defines them.
 
 The totals match those shown in VRM (solar yield, consumption, energy from and to the grid). Flows without any
 data, e.g. a generator that does not exist, are not created.
+
+In addition, each period gets two ratios in percent:
+
+| State | Calculation | Meaning |
+|---|---|---|
+| `autarky` | 1 − gridImport / consumption | Self-sufficiency: share of the consumption not covered by the grid |
+| `selfConsumption` | 1 − gridExport / solarYield | Self-consumption: share of the PV yield used on site instead of fed into the grid |
+
+Both are limited to 0–100 % and are empty when there is nothing to divide by, e.g. `selfConsumption` before
+sunrise. Energy from the grid that is stored in the battery counts as grid import, energy from the battery fed into
+the grid counts as export, so neither ratio is too optimistic.
 
 ## Forecast
 

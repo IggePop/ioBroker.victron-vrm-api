@@ -51,6 +51,20 @@ function round(value: number): number {
 }
 
 /**
+ * Share in percent, clamped to 0-100; null if there is nothing to divide by
+ *
+ * @param part - Energy that is subtracted from the total
+ * @param total - Reference energy (consumption or PV yield)
+ */
+export function ratio(part: number, total: number): number | null {
+    if (!(total > 0)) {
+        return null;
+    }
+    const percent = (1 - part / total) * 100;
+    return Math.round(Math.min(100, Math.max(0, percent)) * 10) / 10;
+}
+
+/**
  * Converts the overallstats response into "energy.<period>.<value>" states in kWh.
  * Flows that never have data (e.g. no generator) are omitted; VRM reports them as false.
  *
@@ -88,6 +102,32 @@ export function mapEnergy(records: VrmOverallStatsResponse["records"]): MappedEn
             const sum = total.flows.reduce((acc, flow) => acc + (valueOf(period, flow) ?? 0), 0);
             states.push({ id: `energy.${period}.${total.id}`, common: common(total.name), value: round(sum) });
         }
+
+        // derived ratios, see the reference for the formulas
+        const flow = (name: Flow): number => valueOf(period, name) ?? 0;
+        const consumption =
+            flow("pvToConsumers") + flow("gridToConsumers") + flow("batteryToConsumers") + flow("gensetToConsumers");
+        const solarYield = flow("pvToConsumers") + flow("pvToBattery") + flow("pvToGrid");
+        const percent = (name: string): StateDef["common"] => ({
+            name,
+            type: "number",
+            role: "value",
+            unit: "%",
+            min: 0,
+            max: 100,
+            read: true,
+            write: false,
+        });
+        states.push({
+            id: `energy.${period}.autarky`,
+            common: percent("Self-sufficiency (share of consumption not covered by the grid)"),
+            value: ratio(flow("gridToConsumers") + flow("gridToBattery"), consumption),
+        });
+        states.push({
+            id: `energy.${period}.selfConsumption`,
+            common: percent("Self-consumption (share of PV yield not fed into the grid)"),
+            value: ratio(flow("pvToGrid") + flow("batteryToGrid"), solarYield),
+        });
 
         for (const flow of existing) {
             states.push({

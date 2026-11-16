@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import type { VrmOverallStatsResponse } from "../types";
-import { ENERGY_CODES, mapEnergy } from "./energy";
+import { ENERGY_CODES, mapEnergy, ratio } from "./energy";
 
 // real overallstats response (type=custom), shortened to two periods
 const records: VrmOverallStatsResponse["records"] = {
@@ -86,5 +86,22 @@ describe("energy mapper", () => {
 
     it("returns nothing for an empty response", () => {
         expect(mapEnergy({}).states).to.be.empty;
+    });
+
+    it("calculates self-sufficiency and self-consumption per period", () => {
+        // today: consumption 86.512, grid import 55 -> 36.4 %; PV 39.018, export 5.805 -> 85.1 %
+        expect(value("energy.today.autarky")).to.equal(36.4);
+        expect(value("energy.today.selfConsumption")).to.equal(85.1);
+        expect(value("energy.year.autarky")).to.equal(72.8);
+        expect(value("energy.year.selfConsumption")).to.equal(84.9);
+    });
+});
+
+describe("ratio()", () => {
+    it("is null without a reference value and clamped to 0-100", () => {
+        expect(ratio(1, 0)).to.equal(null);
+        expect(ratio(5, 4)).to.equal(0);
+        expect(ratio(-1, 4)).to.equal(100);
+        expect(ratio(1, 4)).to.equal(75);
     });
 });

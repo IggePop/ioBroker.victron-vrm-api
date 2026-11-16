@@ -19,10 +19,11 @@ Inspiriert vom Node-RED-Node [victron-vrm-api](https://github.com/dirkjanfaber/v
 - Stellt alle Diagnosewerte bereit, die VRM meldet, mit Name, Einheit und Rolle, ein Ordner pro Gerät.
 - Listet die Geräte mit Produktname, Firmware und letzter Verbindung. Die Ordner tragen die Namen der Geräte in VRM
   (eigener Name, Produkt oder Modell), z. B. „Fronius Symo 5.0-3-M (PV Inverter 20)“.
-- Stellt bekannte Live-Werte unter festen IDs bereit (Ladezustand, PV, Netz, Verbrauch, Batterie).
+- Stellt bekannte Live-Werte unter festen IDs bereit (Ladezustand, PV, Netz, Verbrauch, Batterie,
+  Restlaufzeit).
 - Stellt Energiesummen für heute, Woche, Monat und Jahr bereit: PV-Ertrag, Verbrauch, Netzbezug und -einspeisung,
-  Batterie geladen und entladen, dazu die einzelnen Energieflüsse (z. B. PV in die Batterie). Eine Anfrage pro
-  Anlage.
+  Batterie geladen und entladen, Autarkiegrad und Eigenverbrauchsquote in Prozent, dazu die einzelnen
+  Energieflüsse (z. B. PV in die Batterie). Eine Anfrage pro Anlage.
 - Stellt die Prognose für PV-Ertrag und Verbrauch für heute (gesamt und Rest des Tages) und morgen bereit, dazu den
   stündlichen Verlauf als JSON.
 - Stellt die Alarme aus dem VRM-Alarmprotokoll bereit: Anzahl und Liste der aktiven Alarme, den neuesten Alarm und

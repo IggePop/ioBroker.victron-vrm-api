@@ -19,7 +19,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var live_exports = {};
 __export(live_exports, {
   LIVE_DEFINITIONS: () => LIVE_DEFINITIONS,
-  mapLive: () => mapLive
+  mapLive: () => mapLive,
+  timeToGo: () => timeToGo
 });
 module.exports = __toCommonJS(live_exports);
 var import_diagnostics = require("./diagnostics");
@@ -123,6 +124,29 @@ function sumSource(records, source) {
   }
   return sum === void 0 ? void 0 : { sum, ts };
 }
+const TIME_TO_GO_SOURCES = [
+  { service: "system", paths: ["/Dc/Battery/TimeToGo"] },
+  { service: "battery", paths: ["/TimeToGo"] }
+];
+function timeToGo(records) {
+  var _a, _b;
+  for (const source of TIME_TO_GO_SOURCES) {
+    const record = records.find(
+      (r) => r.dbusServiceType === source.service && r.dbusPath !== void 0 && source.paths.includes(r.dbusPath)
+    );
+    if (!record) {
+      continue;
+    }
+    const raw = typeof record.rawValue === "number" ? record.rawValue : Number(record.rawValue);
+    if (record.rawValue === null || record.rawValue === "" || isNaN(raw)) {
+      return { hours: null, ts: (0, import_diagnostics.recordTs)(record) };
+    }
+    const unit = (_b = ((_a = record.formatWithUnit) != null ? _a : "").trim().split(/\s+/).pop()) != null ? _b : "";
+    const hours = unit === "h" ? raw : unit === "min" ? raw / 60 : raw / 3600;
+    return { hours: Math.round(hours * 100) / 100, ts: (0, import_diagnostics.recordTs)(record) };
+  }
+  return void 0;
+}
 function mapLive(records) {
   var _a, _b, _c, _d, _e, _f;
   const result = [];
@@ -161,11 +185,28 @@ function mapLive(records) {
       ts: (0, import_diagnostics.newestTs)([(_e = values.pvDcPower) == null ? void 0 : _e.ts, (_f = values.pvAcPower) == null ? void 0 : _f.ts])
     });
   }
+  const ttg = timeToGo(records);
+  if (ttg) {
+    result.push({
+      id: "live.batteryTimeToGo",
+      common: {
+        name: "Battery time to go (empty while charging)",
+        type: "number",
+        role: "value",
+        unit: "h",
+        read: true,
+        write: false
+      },
+      value: ttg.hours,
+      ts: ttg.ts
+    });
+  }
   return result;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   LIVE_DEFINITIONS,
-  mapLive
+  mapLive,
+  timeToGo
 });
 //# sourceMappingURL=live.js.map

@@ -27,10 +27,10 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 - Provides all diagnostics values that VRM reports, with name, unit and role, one folder per device.
 - Lists the devices with product name, firmware and last connection. Folders are named after the devices in VRM
   (custom name, product or model), e.g. "Fronius Symo 5.0-3-M (PV Inverter 20)".
-- Provides well-known live values with fixed ids (state of charge, PV, grid, consumption, battery).
+- Provides well-known live values with fixed ids (state of charge, PV, grid, consumption, battery, time to go).
 - Provides energy totals for today, week, month and year: PV yield, consumption, grid import and export,
-  battery charged and discharged, plus the individual energy flows (e.g. PV to battery). One request per
-  installation.
+  battery charged and discharged, self-sufficiency and self-consumption in percent, plus the individual energy
+  flows (e.g. PV to battery). One request per installation.
 - Provides the PV yield and consumption forecast for today (total and rest of the day) and tomorrow, plus the
   hourly forecast as JSON.
 - Provides the alarms from the VRM alarm log: number and list of active alarms, the newest alarm and the last 25
@@ -85,6 +85,8 @@ or supported by Victron Energy. It uses the public VRM API.
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
+* (IggePop) self-sufficiency and self-consumption per period (energy.*.autarky, energy.*.selfConsumption)
+* (IggePop) remaining battery runtime (live.batteryTimeToGo)
 * (IggePop) values of an installation without new data (info.dataStale) get the quality 0x42 "device not connected"
 -->
 ### **WORK IN PROGRESS**
