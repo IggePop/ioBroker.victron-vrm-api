@@ -36,3 +36,15 @@ node node_modules/iobroker.js-controller/iobroker.js stop victron-vrm-api.0
   (`spawn wmic.exe ENOENT`).
 - `@iobroker/dev-server`: no longer crashes with `ENOENT … .js.map` when `build/` is deleted while `watch` is
   running (e.g. by `npm run build`).
+
+## Release
+
+```bash
+npm run release patch -- --yes   # or minor, major
+```
+
+The release script runs without questions with `--yes`. Before changing anything, it runs `npm run lint`,
+`npm run check` and `npm test` and stops if one of them fails. Then it moves the entries under `WORK IN PROGRESS` in
+the changelog to the new version, updates `package.json` and `io-package.json`, builds, commits, tags and pushes.
+The tag starts the `deploy` job, which publishes the package to npm. Stop `dev-server watch` before, because the
+release runs `npm run build`.
