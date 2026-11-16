@@ -1,5 +1,16 @@
 import type { StateDef } from "./mappers/diagnostics";
 
+/** Quality code of a state, e.g. 0x00 = good */
+export type Quality = NonNullable<ioBroker.SettableState["q"]>;
+
+/** Quality code of a good value */
+export const QUALITY_GOOD: Quality = 0x00;
+/**
+ * Quality code of values of an installation that sends no new data to VRM (`info.dataStale`):
+ * 0x42 = "device not connected", the device being the GX device
+ */
+export const QUALITY_STALE: Quality = 0x42;
+
 /**
  * Creates objects lazily (once per adapter run) and writes values only when they changed.
  */
@@ -22,16 +33,23 @@ export class StateManager {
      *
      * @param prefix
      * @param def
+     * @param q - Quality code, e.g. {@link QUALITY_STALE}; omitted = not set (good)
      */
-    public async setState(prefix: string, def: StateDef): Promise<void> {
+    public async setState(prefix: string, def: StateDef, q?: Quality): Promise<void> {
         const id = prefix ? `${prefix}.${def.id}` : def.id;
         await this.ensureObject(id, {
             type: "state",
             common: { read: true, write: false, ...def.common },
             native: def.native ?? {},
         });
-        // ts = time of the measurement in VRM, so history adapters store the real point in time
-        await this.adapter.setStateChangedAsync(id, { val: def.value, ack: true, ...(def.ts ? { ts: def.ts } : {}) });
+        // ts = time of the measurement in VRM, so history adapters store the real point in time.
+        // setStateChanged also writes when only q changed, so the quality follows dataStale.
+        await this.adapter.setStateChangedAsync(id, {
+            val: def.value,
+            ack: true,
+            ...(def.ts ? { ts: def.ts } : {}),
+            ...(q !== undefined ? { q } : {}),
+        });
     }
 
     /**

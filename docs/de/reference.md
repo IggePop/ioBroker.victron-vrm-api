@@ -59,6 +59,17 @@ Die IDs der Geräteordner (`pv_inverter_20`) bleiben stabil. Die im Admin angeze
 Umbenennen in VRM bricht also keine Skripte und keinen Verlauf. Die Geräteliste wird beim Start und danach stündlich
 gelesen.
 
+### Qualität veralteter Werte
+
+Sendet eine Anlage länger als unter **Daten als veraltet markieren nach** eingestellt keine neuen Daten an VRM
+(`info.dataStale` = `true`), behalten ihre Werte den letzten Wert, erhalten aber die Qualität `q` = `0x42` („Gerät
+nicht verbunden“, gemeint ist das GX-Gerät). Das gilt für `live.*`, `diagnostics.*` (samt Phasensummen) und
+`energy.*`. Sobald wieder neue Daten kommen, geht die Qualität zurück auf `0x00` (gut). Die Energiesummen folgen mit
+ihrer nächsten Abfrage.
+
+Skripte und Visualisierungen können die Qualität am Datenpunkt ablesen (`getState(id).q`), der Admin zeigt sie in
+der Objektliste an.
+
 ## Live-Werte
 
 Jeder Wert stammt aus der Systemübersicht des GX-Geräts. Fehlt er dort, greift der Adapter auf die einzelnen Geräte

@@ -14,7 +14,7 @@ import { mapLive } from "./lib/mappers/live";
 import { mapOverview } from "./lib/mappers/overview";
 import { mapPhaseSums } from "./lib/mappers/phase-sums";
 import { Poller } from "./lib/poller";
-import { StateManager } from "./lib/state-manager";
+import { QUALITY_GOOD, QUALITY_STALE, StateManager } from "./lib/state-manager";
 import type { VrmInstallation } from "./lib/types";
 import { VrmApiError, VrmClient } from "./lib/vrm-client";
 
@@ -75,6 +75,8 @@ class VictronVrmApi extends utils.Adapter {
     private currentDiagnostics = new Map<number, Set<string>>();
     private currentSums = new Map<number, Set<string>>();
     private cleanupDone = false;
+    /** Installations whose data in VRM is stale (`info.dataStale`), their values get {@link QUALITY_STALE} */
+    private staleSites = new Set<number>();
     /** Exclusion list for devices and diagnostics values */
     private filter: ValueFilter = createFilter("");
     private initTimer: ioBroker.Timeout | undefined;
@@ -516,8 +518,9 @@ class VictronVrmApi extends utils.Adapter {
         for (const channel of mapped.channels) {
             await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
         }
+        const q = this.staleSites.has(site.idSite) ? QUALITY_STALE : QUALITY_GOOD;
         for (const state of mapped.states) {
-            await this.states.setState(prefix, state);
+            await this.states.setState(prefix, state, q);
         }
     }
 
@@ -539,6 +542,15 @@ class VictronVrmApi extends utils.Adapter {
     ): Promise<void> {
         const prefix = String(site.idSite);
         const mapped = mapDiagnostics(records);
+        const lastTimestamp = mapped.lastTimestamp ?? (site.last_timestamp ? site.last_timestamp * 1000 : null);
+        const staleAfter = clamp(this.config.staleMinutes, 1, 10_080, 30) * MINUTE;
+        const stale = lastTimestamp === null || Date.now() - lastTimestamp > staleAfter;
+        if (stale) {
+            this.staleSites.add(site.idSite);
+        } else {
+            this.staleSites.delete(site.idSite);
+        }
+        const q = stale ? QUALITY_STALE : QUALITY_GOOD;
         const labels = this.deviceLabels.get(site.idSite);
         const channels = mapped.channels.filter(
             channel => !this.filter.excludesDevice(splitDeviceId(channel.id).key, labels?.get(channel.id)),
@@ -559,7 +571,7 @@ class VictronVrmApi extends utils.Adapter {
             await this.states.ensureChannel(`${prefix}.${channel.id}`, labels?.get(channel.id) ?? channel.name);
         }
         for (const state of mapped.states.filter(included)) {
-            await this.states.setState(prefix, state);
+            await this.states.setState(prefix, state, q);
         }
 
         // default on, also for instances created before the option existed
@@ -572,7 +584,7 @@ class VictronVrmApi extends utils.Adapter {
                 await this.states.ensureChannel(`${prefix}.${channel}`, "Sums over L1-L3");
             }
             for (const state of sums) {
-                await this.states.setState(prefix, state);
+                await this.states.setState(prefix, state, q);
             }
         }
 
@@ -580,26 +592,20 @@ class VictronVrmApi extends utils.Adapter {
         if (live.length) {
             await this.states.ensureChannel(`${prefix}.live`, "Live values");
             for (const state of live) {
-                await this.states.setState(prefix, state);
+                await this.states.setState(prefix, state, q);
             }
         }
 
-        const lastTimestamp = mapped.lastTimestamp ?? (site.last_timestamp ? site.last_timestamp * 1000 : null);
         await this.states.setValue(`${prefix}.info.lastTimestamp`, lastTimestamp, {
             name: "Timestamp of the newest data in VRM",
             type: "number",
             role: "value.time",
         });
-        const staleAfter = clamp(this.config.staleMinutes, 1, 10_080, 30) * MINUTE;
-        await this.states.setValue(
-            `${prefix}.info.dataStale`,
-            lastTimestamp === null || Date.now() - lastTimestamp > staleAfter,
-            {
-                name: "No new data from the GX device for longer than configured",
-                type: "boolean",
-                role: "indicator.maintenance",
-            },
-        );
+        await this.states.setValue(`${prefix}.info.dataStale`, stale, {
+            name: "No new data from the GX device for longer than configured",
+            type: "boolean",
+            role: "indicator.maintenance",
+        });
     }
 
     /**

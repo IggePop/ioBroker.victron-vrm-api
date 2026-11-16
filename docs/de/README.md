@@ -31,7 +31,8 @@ Inspiriert vom Node-RED-Node [victron-vrm-api](https://github.com/dirkjanfaber/v
 - Bildet optional Summen über L1–L3 für Leistung, Strom und Energie.
 - Verwendet den Zeitpunkt, zu dem VRM einen Wert protokolliert hat, als Zeitstempel des Datenpunkts. So speichern
   History-Adapter (History, InfluxDB, SQL) den tatsächlichen Zeitpunkt und nicht den der Abfrage.
-- Zeigt an, ob die Daten in VRM noch aktuell sind (`info.dataStale`).
+- Zeigt an, ob die Daten in VRM noch aktuell sind (`info.dataStale`), und kennzeichnet die Werte einer Anlage, die
+  keine neuen Daten sendet, mit der Qualität „Gerät nicht verbunden“.
 - Zeigt im Admin eine ioBroker-Benachrichtigung, wenn VRM das Zugriffstoken ablehnt. Der Adapter
   notification-manager kann sie weiterleiten, z. B. an Telegram oder per E-Mail.
 - Beantwortet lesende VRM-Anfragen aus Skripten (`sendTo`), siehe

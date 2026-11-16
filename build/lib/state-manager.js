@@ -18,9 +18,13 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var state_manager_exports = {};
 __export(state_manager_exports, {
+  QUALITY_GOOD: () => QUALITY_GOOD,
+  QUALITY_STALE: () => QUALITY_STALE,
   StateManager: () => StateManager
 });
 module.exports = __toCommonJS(state_manager_exports);
+const QUALITY_GOOD = 0;
+const QUALITY_STALE = 66;
 class StateManager {
   constructor(adapter) {
     this.adapter = adapter;
@@ -38,8 +42,9 @@ class StateManager {
    *
    * @param prefix
    * @param def
+   * @param q - Quality code, e.g. {@link QUALITY_STALE}; omitted = not set (good)
    */
-  async setState(prefix, def) {
+  async setState(prefix, def, q) {
     var _a;
     const id = prefix ? `${prefix}.${def.id}` : def.id;
     await this.ensureObject(id, {
@@ -47,7 +52,12 @@ class StateManager {
       common: { read: true, write: false, ...def.common },
       native: (_a = def.native) != null ? _a : {}
     });
-    await this.adapter.setStateChangedAsync(id, { val: def.value, ack: true, ...def.ts ? { ts: def.ts } : {} });
+    await this.adapter.setStateChangedAsync(id, {
+      val: def.value,
+      ack: true,
+      ...def.ts ? { ts: def.ts } : {},
+      ...q !== void 0 ? { q } : {}
+    });
   }
   /**
    * Shortcut for simple info states
@@ -83,6 +93,8 @@ class StateManager {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  QUALITY_GOOD,
+  QUALITY_STALE,
   StateManager
 });
 //# sourceMappingURL=state-manager.js.map

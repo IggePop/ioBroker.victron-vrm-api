@@ -39,7 +39,8 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
 - Optionally adds sums over L1–L3 for power, current and energy values.
 - Uses the time at which VRM logged each value as the state timestamp, so history adapters (History, InfluxDB,
   SQL) store the real point in time, not the time of the poll.
-- Shows whether the data in VRM is still fresh (`info.dataStale`).
+- Shows whether the data in VRM is still fresh (`info.dataStale`) and marks the values of an installation that
+  sends no new data with the quality "device not connected".
 - Shows an ioBroker notification in admin when VRM rejects the access token. The notification-manager adapter can
   forward it, e.g. to Telegram or e-mail.
 - Answers read-only VRM requests from scripts (`sendTo`), see the [reference](docs/en/reference.md#requests-from-scripts).
@@ -84,6 +85,7 @@ or supported by Victron Energy. It uses the public VRM API.
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
+* (IggePop) values of an installation without new data (info.dataStale) get the quality 0x42 "device not connected"
 -->
 ### **WORK IN PROGRESS**
 * (IggePop) option to delete obsolete objects (deselected installations, removed devices, disabled options)

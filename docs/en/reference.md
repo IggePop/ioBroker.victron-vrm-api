@@ -58,6 +58,17 @@ victron-vrm-api.0
 The ids of the device folders (`pv_inverter_20`) are stable. The names shown in admin come from VRM, so
 renaming a device in VRM does not break scripts or history. The device list is read at start and then every hour.
 
+### Quality of stale values
+
+When an installation sends no new data to VRM for longer than set in **Mark data as stale after**
+(`info.dataStale` = `true`), its values keep their last value, but get the quality `q` = `0x42` ("device not
+connected", the device being the GX device). This applies to `live.*`, `diagnostics.*` (including the phase sums)
+and `energy.*`. As soon as new data arrives, the quality goes back to `0x00` (good). The energy totals follow with
+their next poll.
+
+Scripts and visualisations can read the quality from the state (`getState(id).q`), the admin shows it in the
+object list.
+
 ## Live values
 
 Each value comes from the system overview of the GX device. If that is missing, the adapter falls back to the
