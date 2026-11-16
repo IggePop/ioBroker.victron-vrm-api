@@ -27,5 +27,9 @@
     "staleHelp": "Setzt info.dataStale, wenn VRM so lange keine neuen Daten vom GX-Gerät erhalten hat.",
     "testConnectionHelp": "Prüft den eingegebenen Token bei VRM, auch schon vor dem Speichern, und zeigt Benutzer und Anlagen an. Die Instanz muss dafür laufen.",
     "tokenHelp": "Erstelle im VRM-Portal unter Einstellungen → Integrationen → Zugriffstoken ein Zugriffstoken.",
-    "victron-vrm-api adapter settings": "Adaptereinstellungen für victron-vrm-api"
+    "victron-vrm-api adapter settings": "Adaptereinstellungen für victron-vrm-api",
+    "Notify about new alarms": "Bei neuen Alarmen benachrichtigen",
+    "notifyAlarmsHelp": "Zeigt für jeden neuen aktiven Alarm eine ioBroker-Benachrichtigung. Der Adapter notification-manager kann sie weiterleiten, z. B. an Telegram oder per E-Mail.",
+    "Notify when an installation is offline": "Benachrichtigen, wenn eine Anlage offline ist",
+    "notifyOfflineHelp": "Zeigt eine ioBroker-Benachrichtigung, wenn VRM von einer Anlage für die oben eingestellte Zeit keine neuen Daten erhalten hat (info.dataStale)."
 }

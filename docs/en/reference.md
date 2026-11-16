@@ -17,6 +17,8 @@
 | Forecast interval | 60 min | How often the forecast is fetched from VRM (15–1440 min) |
 | Read alarms | on | Alarm log, see below |
 | Alarms interval | 5 min | How often the alarm log is fetched (1–1440 min) |
+| Notify about new alarms | on | ioBroker notification for every new active alarm, see below |
+| Notify when an installation is offline | on | ioBroker notification when `info.dataStale` becomes `true`, see below |
 | Calculate phase sums | on | Creates totals over L1–L3, see below |
 | Exclude devices and values | – | Exclusion list, see below |
 | Delete obsolete objects | off | Cleans up the object tree at start, see below |
@@ -172,6 +174,22 @@ An entry of the JSON lists looks like this:
 
 The device is the custom name from VRM if one is set. The alarm log is fetched every 5 minutes by default.
 An alarm can only appear once the GX device has sent its data to VRM, see the log interval above.
+
+## Notifications
+
+The adapter shows ioBroker notifications in admin (bell icon). The notification-manager adapter can forward them,
+e.g. to Telegram, e-mail or Pushover. There are three categories:
+
+| Category | When |
+|---|---|
+| VRM access token invalid | VRM rejects the token, the adapter reads no data |
+| Victron alarm active | A new alarm appears in the alarm log, e.g. `Home: VE.Bus System: Overload L1 (Warning)` |
+| Victron installation offline | VRM has received no new data for the time set in **Mark data as stale after** |
+
+Each alarm and each outage is reported once, when it starts. The adapter compares with the stored values of
+`alarms.activeList` and `info.dataStale`, so a restart of the adapter does not report them again. There is no
+message when an alarm is cleared or the installation is back online; use `alarms.active` and `info.dataStale` in a
+script for that. The alarm and offline notifications can be switched off in the instance settings.
 
 ## Phase sums
 

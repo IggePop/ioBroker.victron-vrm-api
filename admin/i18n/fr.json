@@ -27,5 +27,9 @@
     "staleHelp": "Définit info.dataStale lorsque VRM n'a reçu aucune nouvelle donnée du périphérique GX pour cette période.",
     "testConnectionHelp": "Vérifie le jeton saisi avec VRM, également avant de l'enregistrer, et affiche l'utilisateur et les installations. L'instance doit être en cours d'exécution.",
     "tokenHelp": "Créez un jeton d'accès dans le portail VRM sous Préférences → Intégrations → Jetons d'accès.",
-    "victron-vrm-api adapter settings": "Paramètres de l'adaptateur pour victron-vrm-api"
+    "victron-vrm-api adapter settings": "Paramètres de l'adaptateur pour victron-vrm-api",
+    "Notify about new alarms": "Notifier les nouvelles alarmes",
+    "notifyAlarmsHelp": "Affiche une notification ioBroker pour chaque nouvelle alarme active. L'adaptateur notification-manager peut la transmettre, p. ex. à Telegram ou par e-mail.",
+    "Notify when an installation is offline": "Notifier lorsqu'une installation est hors ligne",
+    "notifyOfflineHelp": "Affiche une notification ioBroker lorsque VRM n'a reçu aucune nouvelle donnée d'une installation pendant la durée définie ci-dessus (info.dataStale)."
 }

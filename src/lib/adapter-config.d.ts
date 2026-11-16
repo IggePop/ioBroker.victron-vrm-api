@@ -24,6 +24,10 @@ declare global {
             alarms: boolean;
             /** Polling interval for the alarm log in minutes */
             alarmsInterval: number;
+            /** ioBroker notification when a new alarm becomes active */
+            notifyAlarms: boolean;
+            /** ioBroker notification when an installation sends no new data (info.dataStale) */
+            notifyOffline: boolean;
             /** Create sums over L1-L3 for power, current and energy values */
             phaseSums: boolean;
             /** Delete objects of deselected installations, removed devices and disabled options at start */
@@ -36,7 +40,7 @@ declare global {
 
         /** Notification scope of this adapter, see "notifications" in io-package.json */
         interface NotificationScopes {
-            "victron-vrm-api": "tokenInvalid";
+            "victron-vrm-api": "tokenInvalid" | "alarmActive" | "siteOffline";
         }
     }
 }

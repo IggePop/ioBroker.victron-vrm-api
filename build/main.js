@@ -32,6 +32,7 @@ var import_forecast = require("./lib/mappers/forecast");
 var import_live = require("./lib/mappers/live");
 var import_overview = require("./lib/mappers/overview");
 var import_phase_sums = require("./lib/mappers/phase-sums");
+var import_notifications = require("./lib/notifications");
 var import_poller = require("./lib/poller");
 var import_state_manager = require("./lib/state-manager");
 var import_vrm_client = require("./lib/vrm-client");
@@ -171,12 +172,21 @@ class VictronVrmApi extends utils.Adapter {
    * @param reason - Error text of VRM
    */
   async notifyTokenInvalid(reason) {
+    await this.notify(
+      "tokenInvalid",
+      `${this.namespace}: VRM rejected the access token (${reason}). No data is read until a valid token is entered.`
+    );
+  }
+  /**
+   * Shows an ioBroker notification in admin; the notification-manager adapter can forward it
+   *
+   * @param category - Category from "notifications" in io-package.json
+   * @param message - Text of the notification
+   */
+  async notify(category, message) {
+    this.log.info(`Notification ${category}: ${message}`);
     try {
-      await this.registerNotification(
-        "victron-vrm-api",
-        "tokenInvalid",
-        `${this.namespace}: VRM rejected the access token (${reason}). No data is read until a valid token is entered.`
-      );
+      await this.registerNotification("victron-vrm-api", category, message);
     } catch (error) {
       this.log.debug(`Could not register notification: ${errorMessage(error)}`);
     }
@@ -448,6 +458,13 @@ class VictronVrmApi extends utils.Adapter {
   async processAlarms(site, records) {
     const prefix = String(site.idSite);
     const mapped = (0, import_alarms.mapAlarms)(records);
+    if (this.config.notifyAlarms !== false && mapped.active.length) {
+      const previous = await this.getStateAsync(`${prefix}.alarms.activeList`);
+      const added = (0, import_notifications.newAlarms)(previous == null ? void 0 : previous.val, mapped.active);
+      if (added.length) {
+        await this.notify("alarmActive", `${site.name}: ${added.map(import_alarms.describeAlarm).join(", ")}`);
+      }
+    }
     for (const channel of mapped.channels) {
       await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
     }
@@ -552,6 +569,13 @@ class VictronVrmApi extends utils.Adapter {
       type: "number",
       role: "value.time"
     });
+    if (this.config.notifyOffline !== false) {
+      const previous = await this.getStateAsync(`${prefix}.info.dataStale`);
+      if ((0, import_notifications.becameStale)(previous == null ? void 0 : previous.val, stale)) {
+        const since = lastTimestamp !== null ? ` since ${new Date(lastTimestamp).toLocaleString()}` : "";
+        await this.notify("siteOffline", `${site.name}: VRM has received no new data${since}.`);
+      }
+    }
     await this.states.setValue(`${prefix}.info.dataStale`, stale, {
       name: "No new data from the GX device for longer than configured",
       type: "boolean",

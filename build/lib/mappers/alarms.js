@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var alarms_exports = {};
 __export(alarms_exports, {
   ALARM_LOG_COUNT: () => ALARM_LOG_COUNT,
+  describeAlarm: () => describeAlarm,
   mapAlarms: () => mapAlarms
 });
 module.exports = __toCommonJS(alarms_exports);
@@ -40,7 +41,7 @@ function toEntry(record) {
     cleared
   };
 }
-function describe(entry) {
+function describeAlarm(entry) {
   return `${entry.device}: ${entry.text}`;
 }
 function mapAlarms(records) {
@@ -50,6 +51,7 @@ function mapAlarms(records) {
   const last = entries[0];
   const state = (id, value, common) => ({ id: `alarms.${id}`, common: { ...common, read: true, write: false }, value });
   return {
+    active,
     channels: [{ id: "alarms", name: "Alarms" }],
     states: [
       state("count", active.length, { name: "Number of active alarms", type: "number", role: "value" }),
@@ -58,7 +60,7 @@ function mapAlarms(records) {
         type: "boolean",
         role: "indicator.alarm"
       }),
-      state("activeText", active.map(describe).join(", "), {
+      state("activeText", active.map(describeAlarm).join(", "), {
         name: "Active alarms as text",
         type: "string",
         role: "text"
@@ -68,7 +70,7 @@ function mapAlarms(records) {
         type: "string",
         role: "json"
       }),
-      state("lastText", last ? describe(last) : "", {
+      state("lastText", last ? describeAlarm(last) : "", {
         name: "Newest alarm",
         type: "string",
         role: "text"
@@ -94,6 +96,7 @@ function mapAlarms(records) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ALARM_LOG_COUNT,
+  describeAlarm,
   mapAlarms
 });
 //# sourceMappingURL=alarms.js.map

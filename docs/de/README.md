@@ -34,8 +34,9 @@ Inspiriert vom Node-RED-Node [victron-vrm-api](https://github.com/dirkjanfaber/v
   History-Adapter (History, InfluxDB, SQL) den tatsächlichen Zeitpunkt und nicht den der Abfrage.
 - Zeigt an, ob die Daten in VRM noch aktuell sind (`info.dataStale`), und kennzeichnet die Werte einer Anlage, die
   keine neuen Daten sendet, mit der Qualität „Gerät nicht verbunden“.
-- Zeigt im Admin eine ioBroker-Benachrichtigung, wenn VRM das Zugriffstoken ablehnt. Der Adapter
-  notification-manager kann sie weiterleiten, z. B. an Telegram oder per E-Mail.
+- Zeigt im Admin ioBroker-Benachrichtigungen, wenn VRM das Zugriffstoken ablehnt, ein neuer Alarm aktiv wird oder
+  eine Anlage offline geht. Der Adapter notification-manager kann sie weiterleiten, z. B. an Telegram oder per
+  E-Mail.
 - Beantwortet lesende VRM-Anfragen aus Skripten (`sendTo`), siehe
   [Referenz](reference.md#anfragen-aus-skripten).
 - Sendet die Anfragen nacheinander, beachtet das Rate-Limit von VRM (HTTP 429) und wartet bei Fehlern länger.

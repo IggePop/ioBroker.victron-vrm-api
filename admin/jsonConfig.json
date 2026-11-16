@@ -168,6 +168,19 @@
                     "lg": 3,
                     "xl": 3
                 },
+                "notifyAlarms": {
+                    "type": "checkbox",
+                    "label": "Notify about new alarms",
+                    "help": "notifyAlarmsHelp",
+                    "default": true,
+                    "hidden": "!data.alarms",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 8,
+                    "lg": 6,
+                    "xl": 6
+                },
                 "staleMinutes": {
                     "type": "number",
                     "label": "Mark data as stale after",
@@ -182,6 +195,18 @@
                     "md": 4,
                     "lg": 3,
                     "xl": 3
+                },
+                "notifyOffline": {
+                    "type": "checkbox",
+                    "label": "Notify when an installation is offline",
+                    "help": "notifyOfflineHelp",
+                    "default": true,
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 8,
+                    "lg": 6,
+                    "xl": 6
                 },
                 "phaseSums": {
                     "type": "checkbox",

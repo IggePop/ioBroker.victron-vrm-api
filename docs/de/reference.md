@@ -17,6 +17,8 @@
 | Intervall Prognose | 60 min | Wie oft die Prognose von VRM abgerufen wird (15–1440 min) |
 | Alarme abrufen | an | Alarmprotokoll, siehe unten |
 | Intervall Alarme | 5 min | Wie oft das Alarmprotokoll abgerufen wird (1–1440 min) |
+| Bei neuen Alarmen benachrichtigen | an | ioBroker-Benachrichtigung für jeden neuen aktiven Alarm, siehe unten |
+| Benachrichtigen, wenn eine Anlage offline ist | an | ioBroker-Benachrichtigung, wenn `info.dataStale` `true` wird, siehe unten |
 | Phasensummen berechnen | an | Bildet Summen über L1–L3, siehe unten |
 | Geräte und Werte ausschließen | – | Ausschlussliste, siehe unten |
 | Veraltete Objekte löschen | aus | Räumt beim Start den Objektbaum auf, siehe unten |
@@ -174,6 +176,23 @@ Ein Eintrag der JSON-Listen sieht so aus:
 Als Gerät steht der eigene Name aus VRM, falls einer vergeben ist. Das Alarmprotokoll wird standardmäßig alle
 5 Minuten abgerufen. Ein Alarm kann erst erscheinen, wenn das GX-Gerät seine Daten an VRM gesendet hat, siehe
 Log-Intervall oben.
+
+## Benachrichtigungen
+
+Der Adapter zeigt ioBroker-Benachrichtigungen im Admin an (Glockensymbol). Der Adapter notification-manager kann sie
+weiterleiten, z. B. an Telegram, per E-Mail oder Pushover. Es gibt drei Kategorien:
+
+| Kategorie | Wann |
+|---|---|
+| VRM-Zugriffstoken ungültig | VRM lehnt das Token ab, der Adapter liest keine Daten |
+| Victron-Alarm aktiv | Ein neuer Alarm erscheint im Alarmprotokoll, z. B. `Zuhause: VE.Bus System: Overload L1 (Warning)` |
+| Victron-Anlage offline | VRM hat für die unter **Daten als veraltet markieren nach** eingestellte Zeit keine neuen Daten erhalten |
+
+Jeder Alarm und jeder Ausfall wird einmal gemeldet, wenn er beginnt. Der Adapter vergleicht mit den gespeicherten
+Werten von `alarms.activeList` und `info.dataStale`, ein Neustart des Adapters meldet sie also nicht erneut. Wenn
+ein Alarm endet oder die Anlage wieder online ist, gibt es keine Meldung; dafür `alarms.active` und `info.dataStale`
+in einem Skript verwenden. Die Benachrichtigungen für Alarme und Ausfälle lassen sich in den Instanzeinstellungen
+abschalten.
 
 ## Phasensummen
 

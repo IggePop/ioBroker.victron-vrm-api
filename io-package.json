@@ -99,6 +99,8 @@
         "forecastInterval": 60,
         "alarms": true,
         "alarmsInterval": 5,
+        "notifyAlarms": true,
+        "notifyOffline": true,
         "staleMinutes": 30,
         "phaseSums": true,
         "cleanupObjects": false,
@@ -168,6 +170,70 @@
                     "severity": "alert",
                     "regex": [],
                     "limit": 1
+                },
+                {
+                    "category": "alarmActive",
+                    "name": {
+                        "en": "Victron alarm active",
+                        "de": "Victron-Alarm aktiv",
+                        "ru": "Активна тревога Victron",
+                        "pt": "Alarme Victron ativo",
+                        "nl": "Victron-alarm actief",
+                        "fr": "Alarme Victron active",
+                        "it": "Allarme Victron attivo",
+                        "es": "Alarma de Victron activa",
+                        "pl": "Aktywny alarm Victron",
+                        "uk": "Активна тривога Victron",
+                        "zh-cn": "Victron 告警激活"
+                    },
+                    "description": {
+                        "en": "A new alarm of a Victron installation is active, e.g. low battery or overload. The details are in the message and in alarms.* of the installation.",
+                        "de": "Ein neuer Alarm einer Victron-Anlage ist aktiv, z. B. Batterie leer oder Überlast. Die Details stehen in der Meldung und unter alarms.* der Anlage.",
+                        "ru": "Активна новая тревога установки Victron, например низкий заряд батареи или перегрузка. Подробности в сообщении и в alarms.* установки.",
+                        "pt": "Um novo alarme de uma instalação Victron está ativo, p. ex. bateria fraca ou sobrecarga. Os detalhes estão na mensagem e em alarms.* da instalação.",
+                        "nl": "Er is een nieuw alarm van een Victron-installatie actief, bijv. lage accu of overbelasting. De details staan in het bericht en onder alarms.* van de installatie.",
+                        "fr": "Une nouvelle alarme d'une installation Victron est active, p. ex. batterie faible ou surcharge. Les détails figurent dans le message et dans alarms.* de l'installation.",
+                        "it": "Un nuovo allarme di un impianto Victron è attivo, ad es. batteria scarica o sovraccarico. I dettagli sono nel messaggio e in alarms.* dell'impianto.",
+                        "es": "Hay una nueva alarma activa en una instalación Victron, p. ej. batería baja o sobrecarga. Los detalles están en el mensaje y en alarms.* de la instalación.",
+                        "pl": "Aktywny jest nowy alarm instalacji Victron, np. niski poziom baterii lub przeciążenie. Szczegóły znajdują się w komunikacie i w alarms.* instalacji.",
+                        "uk": "Активна нова тривога установки Victron, наприклад низький заряд батареї або перевантаження. Подробиці в повідомленні та в alarms.* установки.",
+                        "zh-cn": "Victron 系统有新的告警处于激活状态，例如电池电量低或过载。详细信息见消息和该系统的 alarms.*。"
+                    },
+                    "severity": "alert",
+                    "regex": [],
+                    "limit": 50
+                },
+                {
+                    "category": "siteOffline",
+                    "name": {
+                        "en": "Victron installation offline",
+                        "de": "Victron-Anlage offline",
+                        "ru": "Установка Victron не в сети",
+                        "pt": "Instalação Victron offline",
+                        "nl": "Victron-installatie offline",
+                        "fr": "Installation Victron hors ligne",
+                        "it": "Impianto Victron offline",
+                        "es": "Instalación Victron sin conexión",
+                        "pl": "Instalacja Victron offline",
+                        "uk": "Установка Victron не в мережі",
+                        "zh-cn": "Victron 系统离线"
+                    },
+                    "description": {
+                        "en": "VRM has received no new data from the GX device of an installation for longer than set in the instance settings. Check the internet connection and the power supply of the GX device.",
+                        "de": "VRM hat länger als in den Instanzeinstellungen eingestellt keine neuen Daten vom GX-Gerät einer Anlage erhalten. Prüfe die Internetverbindung und die Stromversorgung des GX-Geräts.",
+                        "ru": "VRM не получает новых данных от устройства GX установки дольше, чем задано в настройках экземпляра. Проверьте подключение к интернету и питание устройства GX.",
+                        "pt": "O VRM não recebe novos dados do dispositivo GX de uma instalação há mais tempo do que o definido nas definições da instância. Verifique a ligação à internet e a alimentação do dispositivo GX.",
+                        "nl": "VRM heeft langer dan ingesteld in de instantie-instellingen geen nieuwe gegevens van het GX-apparaat van een installatie ontvangen. Controleer de internetverbinding en de voeding van het GX-apparaat.",
+                        "fr": "VRM n'a reçu aucune nouvelle donnée de l'appareil GX d'une installation depuis plus longtemps que la durée définie dans les paramètres de l'instance. Vérifiez la connexion Internet et l'alimentation de l'appareil GX.",
+                        "it": "VRM non riceve nuovi dati dal dispositivo GX di un impianto da più tempo di quanto impostato nelle impostazioni dell'istanza. Controlla la connessione a Internet e l'alimentazione del dispositivo GX.",
+                        "es": "VRM no ha recibido datos nuevos del dispositivo GX de una instalación durante más tiempo del configurado en la instancia. Compruebe la conexión a Internet y la alimentación del dispositivo GX.",
+                        "pl": "VRM nie otrzymał nowych danych z urządzenia GX instalacji dłużej, niż ustawiono w ustawieniach instancji. Sprawdź połączenie z internetem i zasilanie urządzenia GX.",
+                        "uk": "VRM не отримує нових даних від пристрою GX установки довше, ніж задано в налаштуваннях екземпляра. Перевірте підключення до інтернету та живлення пристрою GX.",
+                        "zh-cn": "VRM 超过实例设置中设定的时间未收到某系统 GX 设备的新数据。请检查 GX 设备的网络连接和电源。"
+                    },
+                    "severity": "alert",
+                    "regex": [],
+                    "limit": 50
                 }
             ]
         }

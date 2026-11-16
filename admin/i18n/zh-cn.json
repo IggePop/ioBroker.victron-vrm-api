@@ -27,5 +27,9 @@
     "staleHelp": "当 VRM 在此时间内未从 GX 设备收到新数据时，设置 info.dataStale。",
     "testConnectionHelp": "在保存之前也可通过 VRM 检查输入的令牌，并显示用户和系统。实例必须正在运行。",
     "tokenHelp": "在 VRM 门户中的首选项 → 集成 → 访问令牌下创建访问令牌。",
-    "victron-vrm-api adapter settings": "victron-vrm-api 的适配器设置"
+    "victron-vrm-api adapter settings": "victron-vrm-api 的适配器设置",
+    "Notify about new alarms": "新告警时通知",
+    "notifyAlarmsHelp": "每个新的激活告警都会显示一条 ioBroker 通知。notification-manager 适配器可以将其转发，例如转发到 Telegram 或电子邮件。",
+    "Notify when an installation is offline": "系统离线时通知",
+    "notifyOfflineHelp": "当 VRM 在上方设定的时间内未收到某系统的新数据时（info.dataStale），显示一条 ioBroker 通知。"
 }

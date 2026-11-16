@@ -42,8 +42,8 @@ Inspired by the Node-RED node [victron-vrm-api](https://github.com/dirkjanfaber/
   SQL) store the real point in time, not the time of the poll.
 - Shows whether the data in VRM is still fresh (`info.dataStale`) and marks the values of an installation that
   sends no new data with the quality "device not connected".
-- Shows an ioBroker notification in admin when VRM rejects the access token. The notification-manager adapter can
-  forward it, e.g. to Telegram or e-mail.
+- Shows ioBroker notifications in admin when VRM rejects the access token, a new alarm becomes active or an
+  installation goes offline. The notification-manager adapter can forward them, e.g. to Telegram or e-mail.
 - Answers read-only VRM requests from scripts (`sendTo`), see the [reference](docs/en/reference.md#requests-from-scripts).
 - Sends requests one after another, honours the VRM rate limit (HTTP 429) and backs off when errors occur.
 
@@ -95,6 +95,7 @@ or supported by Victron Energy. It uses the public VRM API.
 * (IggePop) remaining battery runtime (live.batteryTimeToGo)
 * (IggePop) more live values: battery temperature, AC output, generator, EV charger power and tank levels
 * (IggePop) fix: with several battery monitors and no system values, live.soc and the other battery values were added up
+* (IggePop) ioBroker notifications for new alarms and when an installation goes offline
 
 ### 0.1.0 (2026-11-02)
 * (IggePop) initial release

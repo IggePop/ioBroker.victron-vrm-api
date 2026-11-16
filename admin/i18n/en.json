@@ -27,5 +27,9 @@
     "Exclude devices and values": "Exclude devices and values",
     "excludeHelp": "One pattern per line, * and ? as wildcards, # for comments. A pattern matches a device (gateway_0, MultiPlus*), a value (ve_bus_system_276.vvp) or the name of a value (*alarm*). Applies to diagnostics, phase sums and the device list, live values are always kept. Enable \"Delete obsolete objects\" to remove existing objects.",
     "Test connection": "Test connection",
-    "testConnectionHelp": "Checks the entered token with VRM, also before saving, and shows the user and the installations. The instance must be running."
+    "testConnectionHelp": "Checks the entered token with VRM, also before saving, and shows the user and the installations. The instance must be running.",
+    "Notify about new alarms": "Notify about new alarms",
+    "notifyAlarmsHelp": "Shows an ioBroker notification for every new active alarm. The notification-manager adapter can forward it, e.g. to Telegram or e-mail.",
+    "Notify when an installation is offline": "Notify when an installation is offline",
+    "notifyOfflineHelp": "Shows an ioBroker notification when VRM has received no new data from an installation for the time set above (info.dataStale)."
 }

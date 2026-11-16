@@ -35,7 +35,12 @@ function toEntry(record: VrmAlarmLogRecord): AlarmEntry {
     };
 }
 
-function describe(entry: AlarmEntry): string {
+/**
+ * Alarm as text, e.g. "VE.Bus System: Overload L1 (Warning)"
+ *
+ * @param entry - Alarm entry
+ */
+export function describeAlarm(entry: AlarmEntry): string {
     return `${entry.device}: ${entry.text}`;
 }
 
@@ -44,7 +49,12 @@ function describe(entry: AlarmEntry): string {
  *
  * @param records - Entries of the alarm log, in any order
  */
-export function mapAlarms(records: VrmAlarmLogRecord[]): { channels: ChannelDef[]; states: StateDef[] } {
+export function mapAlarms(records: VrmAlarmLogRecord[]): {
+    channels: ChannelDef[];
+    states: StateDef[];
+    /** Active alarms, newest first */
+    active: AlarmEntry[];
+} {
     const entries = records.map(toEntry).sort((a, b) => b.started - a.started);
     const active = entries.filter(entry => entry.active);
     const last = entries[0];
@@ -56,6 +66,7 @@ export function mapAlarms(records: VrmAlarmLogRecord[]): { channels: ChannelDef[
     ): StateDef => ({ id: `alarms.${id}`, common: { ...common, read: true, write: false }, value });
 
     return {
+        active,
         channels: [{ id: "alarms", name: "Alarms" }],
         states: [
             state("count", active.length, { name: "Number of active alarms", type: "number", role: "value" }),
@@ -64,7 +75,7 @@ export function mapAlarms(records: VrmAlarmLogRecord[]): { channels: ChannelDef[
                 type: "boolean",
                 role: "indicator.alarm",
             }),
-            state("activeText", active.map(describe).join(", "), {
+            state("activeText", active.map(describeAlarm).join(", "), {
                 name: "Active alarms as text",
                 type: "string",
                 role: "text",
@@ -74,7 +85,7 @@ export function mapAlarms(records: VrmAlarmLogRecord[]): { channels: ChannelDef[
                 type: "string",
                 role: "json",
             }),
-            state("lastText", last ? describe(last) : "", {
+            state("lastText", last ? describeAlarm(last) : "", {
                 name: "Newest alarm",
                 type: "string",
                 role: "text",
