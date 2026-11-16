@@ -82,11 +82,6 @@ or supported by Victron Energy. It uses the public VRM API.
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
-* (IggePop) fix: with several battery monitors and no system values, live.soc and the other battery values were added up
-* (IggePop) more live values: battery temperature, AC output, generator, EV charger power and tank levels
-* (IggePop) self-sufficiency and self-consumption per period (energy.*.autarky, energy.*.selfConsumption)
-* (IggePop) remaining battery runtime (live.batteryTimeToGo)
-* (IggePop) values of an installation without new data (info.dataStale) get the quality 0x42 "device not connected"
 -->
 ### **WORK IN PROGRESS**
 * (IggePop) option to delete obsolete objects (deselected installations, removed devices, disabled options)
@@ -95,6 +90,11 @@ or supported by Victron Energy. It uses the public VRM API.
 * (IggePop) sendTo "get" for own read-only VRM requests from scripts
 * (IggePop) button "Test connection" in the instance settings
 * (IggePop) ioBroker notification when VRM rejects the access token
+* (IggePop) values of an installation without new data (info.dataStale) get the quality 0x42 "device not connected"
+* (IggePop) self-sufficiency and self-consumption per period (energy.*.autarky, energy.*.selfConsumption)
+* (IggePop) remaining battery runtime (live.batteryTimeToGo)
+* (IggePop) more live values: battery temperature, AC output, generator, EV charger power and tank levels
+* (IggePop) fix: with several battery monitors and no system values, live.soc and the other battery values were added up
 
 ### 0.1.0 (2026-11-02)
 * (IggePop) initial release
