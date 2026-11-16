@@ -83,7 +83,7 @@ or supported by Victron Energy. It uses the public VRM API.
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.2.0 (2026-11-16)
 * (IggePop) option to delete obsolete objects (deselected installations, removed devices, disabled options)
 * (IggePop) exclusion list for devices and diagnostics values
 * (IggePop) no phase sums for setpoints and limits (e.g. Hub4 power setpoint, Max Feedin Power)

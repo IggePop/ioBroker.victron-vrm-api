@@ -1,265 +1,291 @@
 {
-    "common": {
-        "name": "victron-vrm-api",
-        "version": "0.1.0",
-        "news": {
-            "0.1.0": {
-                "en": "initial release\ndiagnostics of all installations of a VRM account with well-known live values\ndevice list with product name and firmware, VRM device names as folder names\nenergy statistics for today, week, month and year\nsolar yield and consumption forecast\nalarms from the VRM alarm log\noptional sums over L1-L3, VRM timestamps as state timestamps",
-                "de": "Erste Version\nDiagnosewerte aller Anlagen eines VRM-Kontos mit bekannten Live-Werten\nGeräteliste mit Produktname und Firmware, VRM-Gerätenamen als Ordnernamen\nEnergiestatistik für heute, Woche, Monat und Jahr\nPrognose für PV-Ertrag und Verbrauch\nAlarme aus dem VRM-Alarmprotokoll\nOptionale Summen über L1–L3, VRM-Zeitstempel als Zeitstempel der States",
-                "ru": "Первый выпуск\nДиагностика всех установок учётной записи VRM с основными текущими значениями\nСписок устройств с названием продукта и прошивкой, имена устройств VRM как имена папок\nСтатистика энергии за сегодня, неделю, месяц и год\nПрогноз выработки PV и потребления\nАварийные сигналы из журнала VRM\nНеобязательные суммы по L1–L3, метки времени VRM как метки времени состояний",
-                "pt": "Versão inicial\nDiagnóstico de todas as instalações de uma conta VRM com os principais valores em tempo real\nLista de dispositivos com nome do produto e firmware, nomes dos dispositivos VRM como nomes de pastas\nEstatísticas de energia de hoje, semana, mês e ano\nPrevisão de produção fotovoltaica e consumo\nAlarmes do registo de alarmes VRM\nSomas opcionais sobre L1–L3, carimbos de data/hora do VRM nos estados",
-                "nl": "Eerste uitgave\nDiagnose van alle installaties van een VRM-account met de belangrijkste actuele waarden\nApparatenlijst met productnaam en firmware, VRM-apparaatnamen als mapnamen\nEnergiestatistieken voor vandaag, week, maand en jaar\nVoorspelling van PV-opbrengst en verbruik\nAlarmen uit het VRM-alarmlogboek\nOptionele sommen over L1–L3, VRM-tijdstempels als tijdstempels van de states",
-                "fr": "Version initiale\nDiagnostic de toutes les installations d'un compte VRM avec les principales valeurs en temps réel\nListe des appareils avec nom du produit et firmware, noms des appareils VRM comme noms de dossiers\nStatistiques énergétiques du jour, de la semaine, du mois et de l'année\nPrévision de la production PV et de la consommation\nAlarmes du journal des alarmes VRM\nSommes optionnelles sur L1–L3, horodatages VRM pour les états",
-                "it": "Prima versione\nDiagnostica di tutti gli impianti di un account VRM con i principali valori in tempo reale\nElenco dei dispositivi con nome prodotto e firmware, nomi dei dispositivi VRM come nomi delle cartelle\nStatistiche energetiche di oggi, settimana, mese e anno\nPrevisione di produzione FV e consumo\nAllarmi dal registro allarmi VRM\nSomme opzionali su L1–L3, timestamp VRM per gli stati",
-                "es": "Versión inicial\nDiagnóstico de todas las instalaciones de una cuenta VRM con los principales valores en tiempo real\nLista de dispositivos con nombre de producto y firmware, nombres de dispositivos VRM como nombres de carpetas\nEstadísticas de energía de hoy, semana, mes y año\nPrevisión de producción fotovoltaica y consumo\nAlarmas del registro de alarmas VRM\nSumas opcionales sobre L1–L3, marcas de tiempo de VRM en los estados",
-                "pl": "Pierwsze wydanie\nDiagnostyka wszystkich instalacji konta VRM z najważniejszymi bieżącymi wartościami\nLista urządzeń z nazwą produktu i firmware, nazwy urządzeń VRM jako nazwy folderów\nStatystyki energii za dziś, tydzień, miesiąc i rok\nPrognoza produkcji PV i zużycia\nAlarmy z dziennika alarmów VRM\nOpcjonalne sumy dla L1–L3, znaczniki czasu VRM w stanach",
-                "uk": "Перший випуск\nДіагностика всіх установок облікового запису VRM з основними поточними значеннями\nСписок пристроїв з назвою продукту та прошивкою, назви пристроїв VRM як назви папок\nЕнергетична статистика за сьогодні, тиждень, місяць і рік\nПрогноз вироблення PV та споживання\nАварійні сигнали з журналу VRM\nНеобов'язкові суми по L1–L3, мітки часу VRM як мітки часу станів",
-                "zh-cn": "首个版本\nVRM 账户下所有系统的诊断数据及常用实时值\n设备列表（产品名称和固件），以 VRM 设备名称作为文件夹名称\n今天、本周、本月和本年的能源统计\n光伏发电量和用电量预测\n来自 VRM 报警日志的报警\n可选的 L1–L3 合计，状态使用 VRM 时间戳"
-            },
-            "0.0.1": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "uk": "Початкова версія",
-                "zh-cn": "首次出版"
-            }
-        },
-        "titleLang": {
-            "en": "Victron VRM API",
-            "de": "Victron VRM-API",
-            "ru": "API Victron VRM",
-            "pt": "API Victron VRM",
-            "nl": "Victron VRM-API",
-            "fr": "API VRM de Victron",
-            "it": "API Victron VRM",
-            "es": "API VRM de Victron",
-            "pl": "API Victron VRM",
-            "uk": "API Victron VRM",
-            "zh-cn": "Victron VRM API"
-        },
-        "desc": {
-            "en": "Reads data of Victron installations from the VRM portal API",
-            "de": "Liest Daten von Victron-Anlagen über die VRM-Portal-API",
-            "ru": "Считывает данные установок Victron через API портала VRM",
-            "pt": "Lê dados de instalações Victron através da API do portal VRM",
-            "nl": "Leest gegevens van Victron-installaties via de API van het VRM-portaal",
-            "fr": "Lit les données des installations Victron via l'API du portail VRM",
-            "it": "Legge i dati degli impianti Victron tramite l'API del portale VRM",
-            "es": "Lee datos de instalaciones Victron a través de la API del portal VRM",
-            "pl": "Odczytuje dane instalacji Victron przez API portalu VRM",
-            "uk": "Зчитує дані установок Victron через API порталу VRM",
-            "zh-cn": "通过 VRM 门户 API 读取 Victron 系统的数据"
-        },
-        "authors": ["IggePop <mail@igge.org>"],
-        "keywords": ["victron", "vrm", "energy", "solar", "battery", "ess"],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "victron-vrm-api.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/IggePop/ioBroker.victron-vrm-api/main/admin/victron-vrm-api.png",
-        "readme": "https://github.com/IggePop/ioBroker.victron-vrm-api/blob/main/README.md",
-        "loglevel": "info",
-        "tier": 3,
-        "mode": "daemon",
-        "type": "energy",
-        "compact": true,
-        "connectionType": "cloud",
-        "dataSource": "poll",
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=6.0.11"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=7.0.23"
-            }
-        ],
-        "messagebox": true
+  "common": {
+    "name": "victron-vrm-api",
+    "version": "0.2.0",
+    "news": {
+      "0.2.0": {
+        "en": "option to delete obsolete objects (deselected installations, removed devices, disabled options)\nexclusion list for devices and diagnostics values\nno phase sums for setpoints and limits (e.g. Hub4 power setpoint, Max Feedin Power)\nsendTo \"get\" for own read-only VRM requests from scripts\nbutton \"Test connection\" in the instance settings\nioBroker notification when VRM rejects the access token\nvalues of an installation without new data (info.dataStale) get the quality 0x42 \"device not connected\"\nself-sufficiency and self-consumption per period (energy.*.autarky, energy.*.selfConsumption)\nremaining battery runtime (live.batteryTimeToGo)\nmore live values: battery temperature, AC output, generator, EV charger power and tank levels\nfix: with several battery monitors and no system values, live.soc and the other battery values were added up\nioBroker notifications for new alarms and when an installation goes offline",
+        "de": "Option zum Löschen veralteter Objekte (abgewählte, entfernte Geräte, deaktivierte Optionen)\nAusschlussliste für Geräte und Diagnosewerte\nkeine Phasensummen für Soll- und Grenzwerte (z. B. Hub4, Max Feedin Power)\nSendTo „get“ für eigene VRM-Anfragen aus Skripten\nButton „Verbindung testen“ in den Instanzeinstellungen\nioBroker-Meldung, wenn VRM das Access Token ablehnt\nWerte einer Anlage ohne neue Daten (info.DataStale) haben die Qualität 0x42 „Gerät nicht verbunden“\nAutarkie und Eigenverbrauch pro Periode (Energie.*.Autarkie, Energie.*.Eigenverbrauch)\nRestlaufzeit (Live.BatteryTimeToGo)\nmehr Live-Werte: Akkutemperatur, AC-Ausgang, Generator, EV-Ladeleistung und Tankfüllstand\nFix: mit mehreren Akku-Monitoren und ohne Systemwerte, live.soc und andere Akkuwerte wurden addiert\nioBroker-Meldungen für neue Alarme und wenn eine Anlage offline geht",
+        "ru": "возможность удаления устаревших объектов (отмененные установки, удаленные устройства, отключенные опции)\nсписок исключений для устройств и диагностических значений\nнет сумм фаз для заданных значений и предельных значений (например, заданное значение мощности Hub4, максимальная мощность подачи)\nSendTo «get» для собственных запросов VRM из скриптов, доступных только для чтения\nкнопка «Проверить соединение» в настройках экземпляра\nУведомление IOBroker, когда VRM отклоняет токен доступа\nзначения установки без новых данных (Info.DataStale) получают качество 0x42 «устройство не подключено»\nсамодостаточность и самопотребление за период (энергия.*.автаркия, энергия.*.самопотребление)\nоставшееся время автономной работы (Live.batteryTimeToGo)\nбольше значений в реальном времени: температура батареи, выход переменного тока, генератор, мощность зарядного устройства для электромобилей и уровень бака\nисправлено: при наличии нескольких мониторов заряда батареи и без системных значений значения live.soc и других значений батареи были суммированы\nУведомления IOBroker о новых сигналах тревоги и отключении установки",
+        "pt": "opção de excluir objetos obsoletos (instalações desmarcadas, desativadas)\nlista de exclusão de dispositivos e diagnósticos\nsem somas de fase para pontos e limites (ex.: Hub4 power, Max Feedin Power)\nSendTo “get” para pedidos de VRM de scripts só de leitura\nbotão “Testar conexão” nos ajustes da instância\nAviso do IOBroker quando o VRM rejeita o token\nvalores de uma instalação sem novos dados (info.dataSale) são 0x42 “device not connected”\nautossuficiência e autoconsumo por período (energia.*.autarquia, energia.*.autoconsumo)\nbateria restante (Live.batteryTimetoGo)\nmais valores ativos: temperatura da bateria, saída AC, gerador, carga EV e níveis do tanque\ncorreção: com vários monitores e sem valores de sistema, o live.soc e os outros valores foram somados\nO IOBroker avisa novos alarmes e quando a instalação sai do ar",
+        "nl": "optie om verouderde objecten te verwijderen (gedeselecteerde installaties, verwijderde apparaten, uitgeschakelde opties)\nuitsluitingslijst voor apparaten en diagnostische waarden\ngeen fasesommen voor instelpunten en limieten (bijv. Hub4-vermogenssetpoint, max. Feedin Power)\nSendTo „get” voor eigen VRM-aanvragen die alleen kunnen worden gelezen op basis van scripts\nknop „Verbinding testen” in de instantie-instellingen\nIOBroker-melding wanneer VRM het toegangstoken weigert\nwaarden van een installatie zonder nieuwe gegevens (Info.DataStale) krijgen de kwaliteit 0x42 „device not connected”\nzelfvoorziening en eigen verbruik per periode (energie.*.autarkie, energie.*.Zelfverbruik)\nresterende batterijduur (Live.BatteryTimeTogo)\nmeer actuele waarden: batterijtemperatuur, AC-uitgang, generator, vermogen van de EV-lader en tankniveaus\nopgelost: met verschillende batterijmonitors en zonder systeemwaarden werden live.soc en de andere batterijwaarden bij elkaar opgeteld\nIOBroker-meldingen voor nieuwe alarmen en wanneer een installatie offline gaat",
+        "fr": "option pour supprimer des objets obsolètes (installations désélectionnées, appareils retirés, options désactivées)\nliste d'exclusion des appareils et des diagnostics\npas de somme de phase pour les valeurs de consigne et les limites (par exemple Hub4, Max Feedin Power)\nSendTo « get » pour les requêtes VRM en lecture seule issues de scripts\nbouton « Tester la connexion » dans les paramètres\nNotification IOBroker lorsque VRM rejette le jeton d'accès\nvaleurs d'une installation sans nouvelles données (info.DataSale) obtiennent la qualité 0x42 « appareil non connecté »\nautosuffisance et autoconsommation par période (énergie.*.autarcie, énergie.*.Selfconsumption)\nautonomie restante (Live.BatteryTimeToGo)\nplus de valeurs en direct : température de la batterie, sortie AC, générateur, charge VE et niveau du réservoir\ncorrectif : avec plusieurs moniteurs de batterie et aucune valeur système, live.soc et les autres piles ont été additionnées\nNotifications IObroker en cas de nouvelles alarmes et de mise hors ligne d'une installation",
+        "it": "eliminare oggetti obsoleti (installazioni deselezionate, dispositivi rimossi)\nesclusi dispositivi e valori diagnostici\nnessuna somma di fase per setpoint e limiti (ad es. potenza Hub4, Max Feeding Power)\nSendTo «get» per richieste VRM in sola lettura da script\npulsante «Test connection» nei settaggi istanza\nNotifica IObroker se VRM rifiuta l'access token\ni valori di un impianto senza nuovi dati (Info.datastale) sono 0x42 «dispositivo non connesso»\nautosufficienza e autoconsumo per periodo (energia.*.autarchia, energia.*.autoconsumo)\nautonomia residua (live.BatteryTimeToGo)\naltri valori attivi: temperatura batteria, uscita AC, generatore, caricabatterie EV e serbatoio\nfix: con diversi monitor e nessun valore di sistema, live.soc e gli altri valori\nNotifiche IOBroker per nuovi allarmi e quando un impianto va offline",
+        "es": "opción de borrar objetos obsoletos (instalaciones deseleccionadas, dispositivos desactivados)\nlista de exclusión de dispositivos y valores de diagnóstico\nsin sumas de fase para los valores y límites (p. ej., potencia máxima del Hub4)\nSendTo «get» para sus propias solicitudes de VRM de guiones\nbotón «Probar conexión» en la configuración de la instancia\nNotificación de IOBroker cuando VRM rechaza el token de acceso\nvalores de una instalación sin datos nuevos (info.DataStale) dan la calidad 0x42 «dispositivo no conectado»\nautosuficiencia y autoconsumo por período (energía.*.autarquía, energía.*.Autoconsumo)\nautonomía restante de la batería (Live.BatteryTimeToGo)\nmás valores en vivo: temperatura de la batería, salida AC, generador, cargador EV, potencia y nivel del tanque\nsolución: con varios monitores de batería y sin valores del sistema, live.soc y los demás valores de la batería se sumaron\nNotificaciones de ioBroker de nuevas alarmas y de desconexión de una instalación",
+        "pl": "opcja usuwania przestarzałych obiektów (niewybrane instalacje, usunięte urządzenia, wyłączone opcje)\nlista wykluczeń dla urządzeń i wartości diagnostycznych\nbrak sum faz dla zadanych i limitów (np. wartość zadana mocy Hub4, maksymalna moc zasilania)\nSendTo „get” dla własnych żądań VRM tylko do odczytu ze skryptów\nprzycisk „Testuj połączenie” w ustawieniach instancji\nPowiadomienie ioBroker, gdy VRM odrzuci token dostępu\nwartości instalacji bez nowych danych (Info.DataStale) otrzymują jakość 0x42 „urządzenie nie jest podłączone”\nsamowystarczalność i samodzielna konsumpcja na okres (energia.*.autarky, energia.*.własna konsumpcja)\npozostały czas pracy baterii (Live.BatteryTimeToGo)\nwięcej wartości na żywo: temperatura akumulatora, wyjście AC, generator, moc ładowarki EV i poziomy zbiornika\npoprawka: przy kilku monitorach baterii i braku wartości systemowych, live.soc i inne wartości baterii zostały zsumowane\nPowiadomienia ioBroker dotyczące nowych alarmów i gdy instalacja przejdzie do trybu offline",
+        "uk": "опція видалення застарілих об'єктів (зняті установки, видалені пристрої, відключені параметри)\nсписок виключень для пристроїв і діагностичних значень\nвідсутність сум фаз для заданих точок та меж (наприклад, задана точка потужності Hub4, максимальна потужність подачі)\nSendTo «отримати» для власних VRM-запитів лише для читання зі скриптів\nкнопка «Тестувати підключення» в налаштуваннях екземпляра\nСповіщення IObroker, коли VRM відхиляє маркер доступу\nзначення установки без нових даних (info.DataStale) отримують якість 0x42 «пристрій не підключено»\nсамодостатність та самоспоживання за період (енергія.*.аутарки, енергія.*.самоспоживання)\nзалишок часу роботи акумулятора (Live.BatteryTimeToGo)\nбільше живих значень: температура акумулятора, вихід змінного струму, генератор, потужність зарядного пристрою EV та рівні бака\nвиправлено: з кількома моніторами акумулятора та відсутністю системних значень, live.soc та інші значення акумулятора були складені\nСповіщення IObroker про нові тривоги та коли інсталяція переходить в автономне режим",
+        "zh-cn": "删除过时对象的选项（取消选择的安装、移除的设备、禁用的选项）\n设备和诊断值的排除列表\n设定值和限值没有相位和（例如 Hub4 功率设定值、最大馈电功率）\nSendTo “获取” 来自脚本的只读 VRM 请求\n实例设置中的 “测试连接” 按钮\n当 VRM 拒绝访问令牌时 IOBroker 通知\n没有新数据的安装值 (Info.DataStale) 的质量为 0x42 “设备未连接”\n每个周期的自给自足和自我消耗（能量。*.autarky、能量。*.自我消耗）\n剩余电池运行时间 (Live.batteryTimeTogo)\n更多实时值：电池温度、交流电输出、发电机、电动汽车充电器功率和油箱液位\n修复：在多个电池监视器且没有系统值的情况下，live.soc 和其他电池值是相加的\n新警报和安装离线时的 IOBroker 通知"
+      },
+      "0.1.0": {
+        "en": "initial release\ndiagnostics of all installations of a VRM account with well-known live values\ndevice list with product name and firmware, VRM device names as folder names\nenergy statistics for today, week, month and year\nsolar yield and consumption forecast\nalarms from the VRM alarm log\noptional sums over L1-L3, VRM timestamps as state timestamps",
+        "de": "Erste Version\nDiagnosewerte aller Anlagen eines VRM-Kontos mit bekannten Live-Werten\nGeräteliste mit Produktname und Firmware, VRM-Gerätenamen als Ordnernamen\nEnergiestatistik für heute, Woche, Monat und Jahr\nPrognose für PV-Ertrag und Verbrauch\nAlarme aus dem VRM-Alarmprotokoll\nOptionale Summen über L1–L3, VRM-Zeitstempel als Zeitstempel der States",
+        "ru": "Первый выпуск\nДиагностика всех установок учётной записи VRM с основными текущими значениями\nСписок устройств с названием продукта и прошивкой, имена устройств VRM как имена папок\nСтатистика энергии за сегодня, неделю, месяц и год\nПрогноз выработки PV и потребления\nАварийные сигналы из журнала VRM\nНеобязательные суммы по L1–L3, метки времени VRM как метки времени состояний",
+        "pt": "Versão inicial\nDiagnóstico de todas as instalações de uma conta VRM com os principais valores em tempo real\nLista de dispositivos com nome do produto e firmware, nomes dos dispositivos VRM como nomes de pastas\nEstatísticas de energia de hoje, semana, mês e ano\nPrevisão de produção fotovoltaica e consumo\nAlarmes do registo de alarmes VRM\nSomas opcionais sobre L1–L3, carimbos de data/hora do VRM nos estados",
+        "nl": "Eerste uitgave\nDiagnose van alle installaties van een VRM-account met de belangrijkste actuele waarden\nApparatenlijst met productnaam en firmware, VRM-apparaatnamen als mapnamen\nEnergiestatistieken voor vandaag, week, maand en jaar\nVoorspelling van PV-opbrengst en verbruik\nAlarmen uit het VRM-alarmlogboek\nOptionele sommen over L1–L3, VRM-tijdstempels als tijdstempels van de states",
+        "fr": "Version initiale\nDiagnostic de toutes les installations d'un compte VRM avec les principales valeurs en temps réel\nListe des appareils avec nom du produit et firmware, noms des appareils VRM comme noms de dossiers\nStatistiques énergétiques du jour, de la semaine, du mois et de l'année\nPrévision de la production PV et de la consommation\nAlarmes du journal des alarmes VRM\nSommes optionnelles sur L1–L3, horodatages VRM pour les états",
+        "it": "Prima versione\nDiagnostica di tutti gli impianti di un account VRM con i principali valori in tempo reale\nElenco dei dispositivi con nome prodotto e firmware, nomi dei dispositivi VRM come nomi delle cartelle\nStatistiche energetiche di oggi, settimana, mese e anno\nPrevisione di produzione FV e consumo\nAllarmi dal registro allarmi VRM\nSomme opzionali su L1–L3, timestamp VRM per gli stati",
+        "es": "Versión inicial\nDiagnóstico de todas las instalaciones de una cuenta VRM con los principales valores en tiempo real\nLista de dispositivos con nombre de producto y firmware, nombres de dispositivos VRM como nombres de carpetas\nEstadísticas de energía de hoy, semana, mes y año\nPrevisión de producción fotovoltaica y consumo\nAlarmas del registro de alarmas VRM\nSumas opcionales sobre L1–L3, marcas de tiempo de VRM en los estados",
+        "pl": "Pierwsze wydanie\nDiagnostyka wszystkich instalacji konta VRM z najważniejszymi bieżącymi wartościami\nLista urządzeń z nazwą produktu i firmware, nazwy urządzeń VRM jako nazwy folderów\nStatystyki energii za dziś, tydzień, miesiąc i rok\nPrognoza produkcji PV i zużycia\nAlarmy z dziennika alarmów VRM\nOpcjonalne sumy dla L1–L3, znaczniki czasu VRM w stanach",
+        "uk": "Перший випуск\nДіагностика всіх установок облікового запису VRM з основними поточними значеннями\nСписок пристроїв з назвою продукту та прошивкою, назви пристроїв VRM як назви папок\nЕнергетична статистика за сьогодні, тиждень, місяць і рік\nПрогноз вироблення PV та споживання\nАварійні сигнали з журналу VRM\nНеобов'язкові суми по L1–L3, мітки часу VRM як мітки часу станів",
+        "zh-cn": "首个版本\nVRM 账户下所有系统的诊断数据及常用实时值\n设备列表（产品名称和固件），以 VRM 设备名称作为文件夹名称\n今天、本周、本月和本年的能源统计\n光伏发电量和用电量预测\n来自 VRM 报警日志的报警\n可选的 L1–L3 合计，状态使用 VRM 时间戳"
+      },
+      "0.0.1": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "uk": "Початкова версія",
+        "zh-cn": "首次出版"
+      }
     },
-    "native": {
-        "token": "",
-        "sites": [],
-        "diagnosticsInterval": 1,
-        "energyStats": true,
-        "energyInterval": 15,
-        "forecast": true,
-        "forecastInterval": 60,
-        "alarms": true,
-        "alarmsInterval": 5,
-        "notifyAlarms": true,
-        "notifyOffline": true,
-        "staleMinutes": 30,
-        "phaseSums": true,
-        "cleanupObjects": false,
-        "exclude": "",
-        "requestTimeout": 30
+    "titleLang": {
+      "en": "Victron VRM API",
+      "de": "Victron VRM-API",
+      "ru": "API Victron VRM",
+      "pt": "API Victron VRM",
+      "nl": "Victron VRM-API",
+      "fr": "API VRM de Victron",
+      "it": "API Victron VRM",
+      "es": "API VRM de Victron",
+      "pl": "API Victron VRM",
+      "uk": "API Victron VRM",
+      "zh-cn": "Victron VRM API"
     },
-    "encryptedNative": ["token"],
-    "protectedNative": ["token"],
-    "notifications": [
-        {
-            "scope": "victron-vrm-api",
-            "name": {
-                "en": "Victron VRM API",
-                "de": "Victron VRM API",
-                "ru": "Victron VRM API",
-                "pt": "Victron VRM API",
-                "nl": "Victron VRM API",
-                "fr": "Victron VRM API",
-                "it": "Victron VRM API",
-                "es": "Victron VRM API",
-                "pl": "Victron VRM API",
-                "uk": "Victron VRM API",
-                "zh-cn": "Victron VRM API"
-            },
-            "description": {
-                "en": "Notifications of the Victron VRM API adapter",
-                "de": "Benachrichtigungen des Adapters Victron VRM API",
-                "ru": "Уведомления адаптера Victron VRM API",
-                "pt": "Notificações do adaptador Victron VRM API",
-                "nl": "Meldingen van de adapter Victron VRM API",
-                "fr": "Notifications de l'adaptateur Victron VRM API",
-                "it": "Notifiche dell'adattatore Victron VRM API",
-                "es": "Notificaciones del adaptador Victron VRM API",
-                "pl": "Powiadomienia adaptera Victron VRM API",
-                "uk": "Сповіщення адаптера Victron VRM API",
-                "zh-cn": "Victron VRM API 适配器的通知"
-            },
-            "categories": [
-                {
-                    "category": "tokenInvalid",
-                    "name": {
-                        "en": "VRM access token invalid",
-                        "de": "VRM-Zugriffstoken ungültig",
-                        "ru": "Токен доступа VRM недействителен",
-                        "pt": "Token de acesso VRM inválido",
-                        "nl": "VRM-toegangstoken ongeldig",
-                        "fr": "Jeton d'accès VRM invalide",
-                        "it": "Token di accesso VRM non valido",
-                        "es": "Token de acceso de VRM no válido",
-                        "pl": "Nieprawidłowy token dostępu VRM",
-                        "uk": "Недійсний маркер доступу VRM",
-                        "zh-cn": "VRM 访问令牌无效"
-                    },
-                    "description": {
-                        "en": "VRM rejected the access token, the adapter does not read any data. Create a new token in VRM (Preferences → Integrations → Access tokens) and enter it in the instance settings.",
-                        "de": "VRM hat den Zugriffstoken abgelehnt, der Adapter liest keine Daten mehr. Lege in VRM einen neuen Token an (Einstellungen → Integrationen → Zugriffstoken) und trage ihn in den Instanzeinstellungen ein.",
-                        "ru": "VRM отклонил токен доступа, адаптер больше не считывает данные. Создайте новый токен в VRM (Preferences → Integrations → Access tokens) и введите его в настройках экземпляра.",
-                        "pt": "O VRM rejeitou o token de acesso, o adaptador já não lê dados. Crie um novo token no VRM (Preferences → Integrations → Access tokens) e introduza-o nas definições da instância.",
-                        "nl": "VRM heeft het toegangstoken geweigerd, de adapter leest geen gegevens meer. Maak in VRM een nieuw token aan (Preferences → Integrations → Access tokens) en voer het in bij de instantie-instellingen.",
-                        "fr": "VRM a refusé le jeton d'accès, l'adaptateur ne lit plus de données. Créez un nouveau jeton dans VRM (Preferences → Integrations → Access tokens) et saisissez-le dans les paramètres de l'instance.",
-                        "it": "VRM ha rifiutato il token di accesso, l'adattatore non legge più dati. Crea un nuovo token in VRM (Preferences → Integrations → Access tokens) e inseriscilo nelle impostazioni dell'istanza.",
-                        "es": "VRM ha rechazado el token de acceso, el adaptador ya no lee datos. Cree un token nuevo en VRM (Preferences → Integrations → Access tokens) e introdúzcalo en la configuración de la instancia.",
-                        "pl": "VRM odrzucił token dostępu, adapter nie odczytuje już danych. Utwórz nowy token w VRM (Preferences → Integrations → Access tokens) i wprowadź go w ustawieniach instancji.",
-                        "uk": "VRM відхилив маркер доступу, адаптер більше не зчитує дані. Створіть новий маркер у VRM (Preferences → Integrations → Access tokens) і введіть його в налаштуваннях екземпляра.",
-                        "zh-cn": "VRM 拒绝了访问令牌，适配器不再读取数据。请在 VRM 中创建新令牌（Preferences → Integrations → Access tokens），并在实例设置中输入。"
-                    },
-                    "severity": "alert",
-                    "regex": [],
-                    "limit": 1
-                },
-                {
-                    "category": "alarmActive",
-                    "name": {
-                        "en": "Victron alarm active",
-                        "de": "Victron-Alarm aktiv",
-                        "ru": "Активна тревога Victron",
-                        "pt": "Alarme Victron ativo",
-                        "nl": "Victron-alarm actief",
-                        "fr": "Alarme Victron active",
-                        "it": "Allarme Victron attivo",
-                        "es": "Alarma de Victron activa",
-                        "pl": "Aktywny alarm Victron",
-                        "uk": "Активна тривога Victron",
-                        "zh-cn": "Victron 告警激活"
-                    },
-                    "description": {
-                        "en": "A new alarm of a Victron installation is active, e.g. low battery or overload. The details are in the message and in alarms.* of the installation.",
-                        "de": "Ein neuer Alarm einer Victron-Anlage ist aktiv, z. B. Batterie leer oder Überlast. Die Details stehen in der Meldung und unter alarms.* der Anlage.",
-                        "ru": "Активна новая тревога установки Victron, например низкий заряд батареи или перегрузка. Подробности в сообщении и в alarms.* установки.",
-                        "pt": "Um novo alarme de uma instalação Victron está ativo, p. ex. bateria fraca ou sobrecarga. Os detalhes estão na mensagem e em alarms.* da instalação.",
-                        "nl": "Er is een nieuw alarm van een Victron-installatie actief, bijv. lage accu of overbelasting. De details staan in het bericht en onder alarms.* van de installatie.",
-                        "fr": "Une nouvelle alarme d'une installation Victron est active, p. ex. batterie faible ou surcharge. Les détails figurent dans le message et dans alarms.* de l'installation.",
-                        "it": "Un nuovo allarme di un impianto Victron è attivo, ad es. batteria scarica o sovraccarico. I dettagli sono nel messaggio e in alarms.* dell'impianto.",
-                        "es": "Hay una nueva alarma activa en una instalación Victron, p. ej. batería baja o sobrecarga. Los detalles están en el mensaje y en alarms.* de la instalación.",
-                        "pl": "Aktywny jest nowy alarm instalacji Victron, np. niski poziom baterii lub przeciążenie. Szczegóły znajdują się w komunikacie i w alarms.* instalacji.",
-                        "uk": "Активна нова тривога установки Victron, наприклад низький заряд батареї або перевантаження. Подробиці в повідомленні та в alarms.* установки.",
-                        "zh-cn": "Victron 系统有新的告警处于激活状态，例如电池电量低或过载。详细信息见消息和该系统的 alarms.*。"
-                    },
-                    "severity": "alert",
-                    "regex": [],
-                    "limit": 50
-                },
-                {
-                    "category": "siteOffline",
-                    "name": {
-                        "en": "Victron installation offline",
-                        "de": "Victron-Anlage offline",
-                        "ru": "Установка Victron не в сети",
-                        "pt": "Instalação Victron offline",
-                        "nl": "Victron-installatie offline",
-                        "fr": "Installation Victron hors ligne",
-                        "it": "Impianto Victron offline",
-                        "es": "Instalación Victron sin conexión",
-                        "pl": "Instalacja Victron offline",
-                        "uk": "Установка Victron не в мережі",
-                        "zh-cn": "Victron 系统离线"
-                    },
-                    "description": {
-                        "en": "VRM has received no new data from the GX device of an installation for longer than set in the instance settings. Check the internet connection and the power supply of the GX device.",
-                        "de": "VRM hat länger als in den Instanzeinstellungen eingestellt keine neuen Daten vom GX-Gerät einer Anlage erhalten. Prüfe die Internetverbindung und die Stromversorgung des GX-Geräts.",
-                        "ru": "VRM не получает новых данных от устройства GX установки дольше, чем задано в настройках экземпляра. Проверьте подключение к интернету и питание устройства GX.",
-                        "pt": "O VRM não recebe novos dados do dispositivo GX de uma instalação há mais tempo do que o definido nas definições da instância. Verifique a ligação à internet e a alimentação do dispositivo GX.",
-                        "nl": "VRM heeft langer dan ingesteld in de instantie-instellingen geen nieuwe gegevens van het GX-apparaat van een installatie ontvangen. Controleer de internetverbinding en de voeding van het GX-apparaat.",
-                        "fr": "VRM n'a reçu aucune nouvelle donnée de l'appareil GX d'une installation depuis plus longtemps que la durée définie dans les paramètres de l'instance. Vérifiez la connexion Internet et l'alimentation de l'appareil GX.",
-                        "it": "VRM non riceve nuovi dati dal dispositivo GX di un impianto da più tempo di quanto impostato nelle impostazioni dell'istanza. Controlla la connessione a Internet e l'alimentazione del dispositivo GX.",
-                        "es": "VRM no ha recibido datos nuevos del dispositivo GX de una instalación durante más tiempo del configurado en la instancia. Compruebe la conexión a Internet y la alimentación del dispositivo GX.",
-                        "pl": "VRM nie otrzymał nowych danych z urządzenia GX instalacji dłużej, niż ustawiono w ustawieniach instancji. Sprawdź połączenie z internetem i zasilanie urządzenia GX.",
-                        "uk": "VRM не отримує нових даних від пристрою GX установки довше, ніж задано в налаштуваннях екземпляра. Перевірте підключення до інтернету та живлення пристрою GX.",
-                        "zh-cn": "VRM 超过实例设置中设定的时间未收到某系统 GX 设备的新数据。请检查 GX 设备的网络连接和电源。"
-                    },
-                    "severity": "alert",
-                    "regex": [],
-                    "limit": 50
-                }
-            ]
-        }
+    "desc": {
+      "en": "Reads data of Victron installations from the VRM portal API",
+      "de": "Liest Daten von Victron-Anlagen über die VRM-Portal-API",
+      "ru": "Считывает данные установок Victron через API портала VRM",
+      "pt": "Lê dados de instalações Victron através da API do portal VRM",
+      "nl": "Leest gegevens van Victron-installaties via de API van het VRM-portaal",
+      "fr": "Lit les données des installations Victron via l'API du portail VRM",
+      "it": "Legge i dati degli impianti Victron tramite l'API del portale VRM",
+      "es": "Lee datos de instalaciones Victron a través de la API del portal VRM",
+      "pl": "Odczytuje dane instalacji Victron przez API portalu VRM",
+      "uk": "Зчитує дані установок Victron через API порталу VRM",
+      "zh-cn": "通过 VRM 门户 API 读取 Victron 系统的数据"
+    },
+    "authors": [
+      "IggePop <mail@igge.org>"
     ],
-    "objects": [],
-    "instanceObjects": [
+    "keywords": [
+      "victron",
+      "vrm",
+      "energy",
+      "solar",
+      "battery",
+      "ess"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "victron-vrm-api.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/IggePop/ioBroker.victron-vrm-api/main/admin/victron-vrm-api.png",
+    "readme": "https://github.com/IggePop/ioBroker.victron-vrm-api/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "energy",
+    "compact": true,
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.0.23"
+      }
+    ],
+    "messagebox": true
+  },
+  "native": {
+    "token": "",
+    "sites": [],
+    "diagnosticsInterval": 1,
+    "energyStats": true,
+    "energyInterval": 15,
+    "forecast": true,
+    "forecastInterval": 60,
+    "alarms": true,
+    "alarmsInterval": 5,
+    "notifyAlarms": true,
+    "notifyOffline": true,
+    "staleMinutes": 30,
+    "phaseSums": true,
+    "cleanupObjects": false,
+    "exclude": "",
+    "requestTimeout": 30
+  },
+  "encryptedNative": [
+    "token"
+  ],
+  "protectedNative": [
+    "token"
+  ],
+  "notifications": [
+    {
+      "scope": "victron-vrm-api",
+      "name": {
+        "en": "Victron VRM API",
+        "de": "Victron VRM API",
+        "ru": "Victron VRM API",
+        "pt": "Victron VRM API",
+        "nl": "Victron VRM API",
+        "fr": "Victron VRM API",
+        "it": "Victron VRM API",
+        "es": "Victron VRM API",
+        "pl": "Victron VRM API",
+        "uk": "Victron VRM API",
+        "zh-cn": "Victron VRM API"
+      },
+      "description": {
+        "en": "Notifications of the Victron VRM API adapter",
+        "de": "Benachrichtigungen des Adapters Victron VRM API",
+        "ru": "Уведомления адаптера Victron VRM API",
+        "pt": "Notificações do adaptador Victron VRM API",
+        "nl": "Meldingen van de adapter Victron VRM API",
+        "fr": "Notifications de l'adaptateur Victron VRM API",
+        "it": "Notifiche dell'adattatore Victron VRM API",
+        "es": "Notificaciones del adaptador Victron VRM API",
+        "pl": "Powiadomienia adaptera Victron VRM API",
+        "uk": "Сповіщення адаптера Victron VRM API",
+        "zh-cn": "Victron VRM API 适配器的通知"
+      },
+      "categories": [
         {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
+          "category": "tokenInvalid",
+          "name": {
+            "en": "VRM access token invalid",
+            "de": "VRM-Zugriffstoken ungültig",
+            "ru": "Токен доступа VRM недействителен",
+            "pt": "Token de acesso VRM inválido",
+            "nl": "VRM-toegangstoken ongeldig",
+            "fr": "Jeton d'accès VRM invalide",
+            "it": "Token di accesso VRM non valido",
+            "es": "Token de acceso de VRM no válido",
+            "pl": "Nieprawidłowy token dostępu VRM",
+            "uk": "Недійсний маркер доступу VRM",
+            "zh-cn": "VRM 访问令牌无效"
+          },
+          "description": {
+            "en": "VRM rejected the access token, the adapter does not read any data. Create a new token in VRM (Preferences → Integrations → Access tokens) and enter it in the instance settings.",
+            "de": "VRM hat den Zugriffstoken abgelehnt, der Adapter liest keine Daten mehr. Lege in VRM einen neuen Token an (Einstellungen → Integrationen → Zugriffstoken) und trage ihn in den Instanzeinstellungen ein.",
+            "ru": "VRM отклонил токен доступа, адаптер больше не считывает данные. Создайте новый токен в VRM (Preferences → Integrations → Access tokens) и введите его в настройках экземпляра.",
+            "pt": "O VRM rejeitou o token de acesso, o adaptador já não lê dados. Crie um novo token no VRM (Preferences → Integrations → Access tokens) e introduza-o nas definições da instância.",
+            "nl": "VRM heeft het toegangstoken geweigerd, de adapter leest geen gegevens meer. Maak in VRM een nieuw token aan (Preferences → Integrations → Access tokens) en voer het in bij de instantie-instellingen.",
+            "fr": "VRM a refusé le jeton d'accès, l'adaptateur ne lit plus de données. Créez un nouveau jeton dans VRM (Preferences → Integrations → Access tokens) et saisissez-le dans les paramètres de l'instance.",
+            "it": "VRM ha rifiutato il token di accesso, l'adattatore non legge più dati. Crea un nuovo token in VRM (Preferences → Integrations → Access tokens) e inseriscilo nelle impostazioni dell'istanza.",
+            "es": "VRM ha rechazado el token de acceso, el adaptador ya no lee datos. Cree un token nuevo en VRM (Preferences → Integrations → Access tokens) e introdúzcalo en la configuración de la instancia.",
+            "pl": "VRM odrzucił token dostępu, adapter nie odczytuje już danych. Utwórz nowy token w VRM (Preferences → Integrations → Access tokens) i wprowadź go w ustawieniach instancji.",
+            "uk": "VRM відхилив маркер доступу, адаптер більше не зчитує дані. Створіть новий маркер у VRM (Preferences → Integrations → Access tokens) і введіть його в налаштуваннях екземпляра.",
+            "zh-cn": "VRM 拒绝了访问令牌，适配器不再读取数据。请在 VRM 中创建新令牌（Preferences → Integrations → Access tokens），并在实例设置中输入。"
+          },
+          "severity": "alert",
+          "regex": [],
+          "limit": 1
         },
         {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Connected to VRM API",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
+          "category": "alarmActive",
+          "name": {
+            "en": "Victron alarm active",
+            "de": "Victron-Alarm aktiv",
+            "ru": "Активна тревога Victron",
+            "pt": "Alarme Victron ativo",
+            "nl": "Victron-alarm actief",
+            "fr": "Alarme Victron active",
+            "it": "Allarme Victron attivo",
+            "es": "Alarma de Victron activa",
+            "pl": "Aktywny alarm Victron",
+            "uk": "Активна тривога Victron",
+            "zh-cn": "Victron 告警激活"
+          },
+          "description": {
+            "en": "A new alarm of a Victron installation is active, e.g. low battery or overload. The details are in the message and in alarms.* of the installation.",
+            "de": "Ein neuer Alarm einer Victron-Anlage ist aktiv, z. B. Batterie leer oder Überlast. Die Details stehen in der Meldung und unter alarms.* der Anlage.",
+            "ru": "Активна новая тревога установки Victron, например низкий заряд батареи или перегрузка. Подробности в сообщении и в alarms.* установки.",
+            "pt": "Um novo alarme de uma instalação Victron está ativo, p. ex. bateria fraca ou sobrecarga. Os detalhes estão na mensagem e em alarms.* da instalação.",
+            "nl": "Er is een nieuw alarm van een Victron-installatie actief, bijv. lage accu of overbelasting. De details staan in het bericht en onder alarms.* van de installatie.",
+            "fr": "Une nouvelle alarme d'une installation Victron est active, p. ex. batterie faible ou surcharge. Les détails figurent dans le message et dans alarms.* de l'installation.",
+            "it": "Un nuovo allarme di un impianto Victron è attivo, ad es. batteria scarica o sovraccarico. I dettagli sono nel messaggio e in alarms.* dell'impianto.",
+            "es": "Hay una nueva alarma activa en una instalación Victron, p. ej. batería baja o sobrecarga. Los detalles están en el mensaje y en alarms.* de la instalación.",
+            "pl": "Aktywny jest nowy alarm instalacji Victron, np. niski poziom baterii lub przeciążenie. Szczegóły znajdują się w komunikacie i w alarms.* instalacji.",
+            "uk": "Активна нова тривога установки Victron, наприклад низький заряд батареї або перевантаження. Подробиці в повідомленні та в alarms.* установки.",
+            "zh-cn": "Victron 系统有新的告警处于激活状态，例如电池电量低或过载。详细信息见消息和该系统的 alarms.*。"
+          },
+          "severity": "alert",
+          "regex": [],
+          "limit": 50
+        },
+        {
+          "category": "siteOffline",
+          "name": {
+            "en": "Victron installation offline",
+            "de": "Victron-Anlage offline",
+            "ru": "Установка Victron не в сети",
+            "pt": "Instalação Victron offline",
+            "nl": "Victron-installatie offline",
+            "fr": "Installation Victron hors ligne",
+            "it": "Impianto Victron offline",
+            "es": "Instalación Victron sin conexión",
+            "pl": "Instalacja Victron offline",
+            "uk": "Установка Victron не в мережі",
+            "zh-cn": "Victron 系统离线"
+          },
+          "description": {
+            "en": "VRM has received no new data from the GX device of an installation for longer than set in the instance settings. Check the internet connection and the power supply of the GX device.",
+            "de": "VRM hat länger als in den Instanzeinstellungen eingestellt keine neuen Daten vom GX-Gerät einer Anlage erhalten. Prüfe die Internetverbindung und die Stromversorgung des GX-Geräts.",
+            "ru": "VRM не получает новых данных от устройства GX установки дольше, чем задано в настройках экземпляра. Проверьте подключение к интернету и питание устройства GX.",
+            "pt": "O VRM não recebe novos dados do dispositivo GX de uma instalação há mais tempo do que o definido nas definições da instância. Verifique a ligação à internet e a alimentação do dispositivo GX.",
+            "nl": "VRM heeft langer dan ingesteld in de instantie-instellingen geen nieuwe gegevens van het GX-apparaat van een installatie ontvangen. Controleer de internetverbinding en de voeding van het GX-apparaat.",
+            "fr": "VRM n'a reçu aucune nouvelle donnée de l'appareil GX d'une installation depuis plus longtemps que la durée définie dans les paramètres de l'instance. Vérifiez la connexion Internet et l'alimentation de l'appareil GX.",
+            "it": "VRM non riceve nuovi dati dal dispositivo GX di un impianto da più tempo di quanto impostato nelle impostazioni dell'istanza. Controlla la connessione a Internet e l'alimentazione del dispositivo GX.",
+            "es": "VRM no ha recibido datos nuevos del dispositivo GX de una instalación durante más tiempo del configurado en la instancia. Compruebe la conexión a Internet y la alimentación del dispositivo GX.",
+            "pl": "VRM nie otrzymał nowych danych z urządzenia GX instalacji dłużej, niż ustawiono w ustawieniach instancji. Sprawdź połączenie z internetem i zasilanie urządzenia GX.",
+            "uk": "VRM не отримує нових даних від пристрою GX установки довше, ніж задано в налаштуваннях екземпляра. Перевірте підключення до інтернету та живлення пристрою GX.",
+            "zh-cn": "VRM 超过实例设置中设定的时间未收到某系统 GX 设备的新数据。请检查 GX 设备的网络连接和电源。"
+          },
+          "severity": "alert",
+          "regex": [],
+          "limit": 50
         }
-    ]
+      ]
+    }
+  ],
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Connected to VRM API",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }
