@@ -72,10 +72,6 @@ For all options, see the [reference](docs/en/reference.md#settings).
   from scripts (`sendTo`)
 - [Development](docs/development.md): build, tests, dev-server and its patches
 
-## Planned
-
-- Dynamic ESS (read only)
-
 ## Disclaimer
 
 Victron Energy and VRM are trademarks of Victron Energy B.V. This project is not affiliated with, endorsed by

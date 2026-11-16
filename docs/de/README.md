@@ -66,10 +66,6 @@ Alle Optionen stehen in der [Referenz](reference.md#einstellungen).
   Anfragen aus Skripten (`sendTo`)
 - [Entwicklung](development.md): Build, Tests, dev-server und seine Patches
 
-## Geplant
-
-- Dynamic ESS (nur lesend)
-
 ## Hinweis
 
 Victron Energy und VRM sind Marken der Victron Energy B.V. Dieses Projekt steht in keiner Verbindung zu Victron
