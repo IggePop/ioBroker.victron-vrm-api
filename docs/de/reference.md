@@ -75,7 +75,7 @@ der Objektliste an.
 ## Live-Werte
 
 Jeder Wert stammt aus der Systemübersicht des GX-Geräts. Fehlt er dort, greift der Adapter auf die einzelnen Geräte
-zurück. Ein Datenpunkt wird nur angelegt, wenn die Anlage den Wert meldet.
+zurück. Bei mehreren Batteriemonitoren stammen alle Batteriewerte dann von dem mit der kleinsten Instanz. Ein Datenpunkt wird nur angelegt, wenn die Anlage den Wert meldet.
 
 | Datenpunkt | Einheit | Beschreibung |
 |---|---|---|
@@ -89,7 +89,7 @@ zurück. Ein Datenpunkt wird nur angelegt, wenn die Anlage den Wert meldet.
 | `live.gridPower` | W | Netzleistung, Summe aller Phasen (positiv = Bezug) |
 | `live.consumption` | W | AC-Verbrauch, Summe aller Phasen |
 | `live.batteryTimeToGo` | h | Restlaufzeit der Batterie, wie sie der Batteriemonitor berechnet, leer während des Ladens |
-| `live.batteryTemperature` | °C | Batterietemperatur (bei mehreren Batteriemonitoren die des ersten) |
+| `live.batteryTemperature` | °C | Batterietemperatur |
 | `live.acOutPower` | W | Leistung der Verbraucher am AC-Ausgang des Wechselrichters/Laders, Summe aller Phasen |
 | `live.gensetPower` | W | Generatorleistung, Summe aller Phasen |
 | `live.evChargerPower` | W | Ladeleistung aller Wallboxen |

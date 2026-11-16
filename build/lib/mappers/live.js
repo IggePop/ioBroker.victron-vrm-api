@@ -36,7 +36,8 @@ const LIVE_DEFINITIONS = [
     sources: [
       { service: "system", paths: ["/Dc/Battery/Soc"] },
       { service: "battery", paths: ["/Soc"] }
-    ]
+    ],
+    aggregate: "first"
   },
   {
     id: "batteryVoltage",
@@ -46,7 +47,8 @@ const LIVE_DEFINITIONS = [
     sources: [
       { service: "system", paths: ["/Dc/Battery/Voltage"] },
       { service: "battery", paths: ["/Dc/0/Voltage"] }
-    ]
+    ],
+    aggregate: "first"
   },
   {
     id: "batteryCurrent",
@@ -56,7 +58,8 @@ const LIVE_DEFINITIONS = [
     sources: [
       { service: "system", paths: ["/Dc/Battery/Current"] },
       { service: "battery", paths: ["/Dc/0/Current"] }
-    ]
+    ],
+    aggregate: "first"
   },
   {
     id: "batteryPower",
@@ -66,7 +69,8 @@ const LIVE_DEFINITIONS = [
     sources: [
       { service: "system", paths: ["/Dc/Battery/Power"] },
       { service: "battery", paths: ["/Dc/0/Power"] }
-    ]
+    ],
+    aggregate: "first"
   },
   {
     id: "pvDcPower",
@@ -148,8 +152,7 @@ const LIVE_DEFINITIONS = [
   }
 ];
 function sumSource(records, source, first = false) {
-  let sum;
-  let ts;
+  const matches = [];
   for (const record of records) {
     if (record.dbusServiceType !== source.service || !record.dbusPath || !source.paths.includes(record.dbusPath)) {
       continue;
@@ -158,13 +161,16 @@ function sumSource(records, source, first = false) {
     if (record.rawValue === null || isNaN(value)) {
       continue;
     }
-    sum = (sum != null ? sum : 0) + value;
-    ts = (0, import_diagnostics.newestTs)([ts, (0, import_diagnostics.recordTs)(record)]);
-    if (first) {
-      break;
-    }
+    matches.push({ value, record });
   }
-  return sum === void 0 ? void 0 : { sum, ts };
+  if (!matches.length) {
+    return void 0;
+  }
+  const used = first ? matches.filter((m) => m.record.instance === Math.min(...matches.map((x) => x.record.instance))) : matches;
+  return {
+    sum: used.reduce((acc, m) => acc + m.value, 0),
+    ts: (0, import_diagnostics.newestTs)(used.map((m) => (0, import_diagnostics.recordTs)(m.record)))
+  };
 }
 const TIME_TO_GO_SOURCES = [
   { service: "system", paths: ["/Dc/Battery/TimeToGo"] },

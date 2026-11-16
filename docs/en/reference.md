@@ -74,7 +74,8 @@ object list.
 ## Live values
 
 Each value comes from the system overview of the GX device. If that is missing, the adapter falls back to the
-individual devices. A state is only created if the installation reports the value.
+individual devices. With several battery monitors, all battery values then come from the one with the lowest
+instance. A state is only created if the installation reports the value.
 
 | State | Unit | Description |
 |---|---|---|
@@ -88,7 +89,7 @@ individual devices. A state is only created if the installation reports the valu
 | `live.gridPower` | W | Grid power, sum of all phases (positive = import) |
 | `live.consumption` | W | AC consumption, sum of all phases |
 | `live.batteryTimeToGo` | h | Remaining runtime of the battery as calculated by the battery monitor, empty while charging |
-| `live.batteryTemperature` | °C | Battery temperature (of the first battery monitor if there are several) |
+| `live.batteryTemperature` | °C | Battery temperature |
 | `live.acOutPower` | W | Power of the loads on AC-out of the inverter/charger, sum of all phases |
 | `live.gensetPower` | W | Generator power, sum of all phases |
 | `live.evChargerPower` | W | Charging power of all EV chargers |

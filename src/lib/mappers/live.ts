@@ -14,7 +14,10 @@ interface LiveDefinition {
     unit?: string;
     /** Alternatives in order of preference; the first one with at least one match wins */
     sources: LiveSource[];
-    /** "sum" (default) adds up all matches, e.g. phases; "first" takes the first match, e.g. a temperature */
+    /**
+     * "sum" (default) adds up all matches, e.g. phases or several solar chargers;
+     * "first" uses only the device with the lowest instance, e.g. for battery values with several battery monitors
+     */
     aggregate?: "sum" | "first";
 }
 
@@ -35,6 +38,7 @@ export const LIVE_DEFINITIONS: LiveDefinition[] = [
             { service: "system", paths: ["/Dc/Battery/Soc"] },
             { service: "battery", paths: ["/Soc"] },
         ],
+        aggregate: "first",
     },
     {
         id: "batteryVoltage",
@@ -45,6 +49,7 @@ export const LIVE_DEFINITIONS: LiveDefinition[] = [
             { service: "system", paths: ["/Dc/Battery/Voltage"] },
             { service: "battery", paths: ["/Dc/0/Voltage"] },
         ],
+        aggregate: "first",
     },
     {
         id: "batteryCurrent",
@@ -55,6 +60,7 @@ export const LIVE_DEFINITIONS: LiveDefinition[] = [
             { service: "system", paths: ["/Dc/Battery/Current"] },
             { service: "battery", paths: ["/Dc/0/Current"] },
         ],
+        aggregate: "first",
     },
     {
         id: "batteryPower",
@@ -65,6 +71,7 @@ export const LIVE_DEFINITIONS: LiveDefinition[] = [
             { service: "system", paths: ["/Dc/Battery/Power"] },
             { service: "battery", paths: ["/Dc/0/Power"] },
         ],
+        aggregate: "first",
     },
     {
         id: "pvDcPower",
@@ -151,15 +158,14 @@ export const LIVE_DEFINITIONS: LiveDefinition[] = [
  *
  * @param records - Diagnostics records
  * @param source - Service and D-Bus paths to add up
- * @param first - Take only the first match instead of the sum
+ * @param first - Use only the device with the lowest instance instead of all devices
  */
 function sumSource(
     records: VrmDiagnosticRecord[],
     source: LiveSource,
     first = false,
 ): { sum: number; ts?: number } | undefined {
-    let sum: number | undefined;
-    let ts: number | undefined;
+    const matches: { value: number; record: VrmDiagnosticRecord }[] = [];
     for (const record of records) {
         if (record.dbusServiceType !== source.service || !record.dbusPath || !source.paths.includes(record.dbusPath)) {
             continue;
@@ -168,13 +174,19 @@ function sumSource(
         if (record.rawValue === null || isNaN(value)) {
             continue;
         }
-        sum = (sum ?? 0) + value;
-        ts = newestTs([ts, recordTs(record)]);
-        if (first) {
-            break;
-        }
+        matches.push({ value, record });
     }
-    return sum === undefined ? undefined : { sum, ts };
+    if (!matches.length) {
+        return undefined;
+    }
+    // "first" = the device with the lowest instance, independent of the order of the records
+    const used = first
+        ? matches.filter(m => m.record.instance === Math.min(...matches.map(x => x.record.instance)))
+        : matches;
+    return {
+        sum: used.reduce((acc, m) => acc + m.value, 0),
+        ts: newestTs(used.map(m => recordTs(m.record))),
+    };
 }
 
 /** D-Bus paths of the time to go, in order of preference (one record, not summed up) */

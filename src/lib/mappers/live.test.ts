@@ -104,6 +104,25 @@ describe("live mapper", () => {
         expect(values).to.include({ "live.acOutPower": 350 });
     });
 
+    it("takes the battery values of one battery monitor, not the sum", () => {
+        // records in any order, the monitor with the lowest instance wins
+        const values = valuesOf([
+            record("battery", "/Soc", 60, 280),
+            record("battery", "/Dc/0/Voltage", 52.1, 280),
+            record("battery", "/Soc", 79, 279),
+            record("battery", "/Dc/0/Voltage", 52.4, 279),
+            record("battery", "/Dc/0/Current", -10, 279),
+            record("battery", "/Dc/0/Power", -524, 279),
+            record("battery", "/Dc/0/Current", -5, 280),
+        ]);
+        expect(values).to.include({
+            "live.soc": 79,
+            "live.batteryVoltage": 52.4,
+            "live.batteryCurrent": -10,
+            "live.batteryPower": -524,
+        });
+    });
+
     it("takes the battery temperature of one battery, not the sum", () => {
         const values = valuesOf([
             record("battery", "/Dc/0/Temperature", 21.5, 279),

@@ -82,6 +82,7 @@ or supported by Victron Energy. It uses the public VRM API.
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
+* (IggePop) fix: with several battery monitors and no system values, live.soc and the other battery values were added up
 * (IggePop) more live values: battery temperature, AC output, generator, EV charger power and tank levels
 * (IggePop) self-sufficiency and self-consumption per period (energy.*.autarky, energy.*.selfConsumption)
 * (IggePop) remaining battery runtime (live.batteryTimeToGo)
