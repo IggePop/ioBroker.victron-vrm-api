@@ -38,6 +38,7 @@ victron-vrm-api.0
    ├─ info.lastTimestamp      time of the newest data in VRM
    ├─ info.dataStale          true if VRM has had no new data for longer than configured
    ├─ live.*                  well-known values (see below)
+   │  └─ tanks.tank_<instance> level, remaining, fluidType
    ├─ energy
    │  └─ today | week | month | year
    │     ├─ solarYield, consumption, gridImport, gridExport,
@@ -87,6 +88,18 @@ individual devices. A state is only created if the installation reports the valu
 | `live.gridPower` | W | Grid power, sum of all phases (positive = import) |
 | `live.consumption` | W | AC consumption, sum of all phases |
 | `live.batteryTimeToGo` | h | Remaining runtime of the battery as calculated by the battery monitor, empty while charging |
+| `live.batteryTemperature` | °C | Battery temperature (of the first battery monitor if there are several) |
+| `live.acOutPower` | W | Power of the loads on AC-out of the inverter/charger, sum of all phases |
+| `live.gensetPower` | W | Generator power, sum of all phases |
+| `live.evChargerPower` | W | Charging power of all EV chargers |
+
+Tank sensors get one folder each, `live.tanks.tank_<instance>`, named after the fluid, e.g. "Tank 21 (Fresh water)":
+
+| State | Unit | Description |
+|---|---|---|
+| `level` | % | Fill level |
+| `remaining` | m³ (or the unit VRM reports) | Remaining volume |
+| `fluidType` | – | Fluid type as number, the names are in the object (e.g. 1 = fresh water, 7 = diesel) |
 
 ## Energy statistics
 

@@ -10,7 +10,7 @@ import { ALARM_LOG_COUNT, mapAlarms } from "./lib/mappers/alarms";
 import { mapDiagnostics, type StateDef } from "./lib/mappers/diagnostics";
 import { ENERGY_CODES, ENERGY_PERIODS, mapEnergy } from "./lib/mappers/energy";
 import { forecastWindow, mapForecast } from "./lib/mappers/forecast";
-import { mapLive } from "./lib/mappers/live";
+import { mapLive, mapTanks } from "./lib/mappers/live";
 import { mapOverview } from "./lib/mappers/overview";
 import { mapPhaseSums } from "./lib/mappers/phase-sums";
 import { Poller } from "./lib/poller";
@@ -589,9 +589,13 @@ class VictronVrmApi extends utils.Adapter {
         }
 
         const live = mapLive(records);
-        if (live.length) {
+        const tanks = mapTanks(records);
+        if (live.length || tanks.states.length) {
             await this.states.ensureChannel(`${prefix}.live`, "Live values");
-            for (const state of live) {
+            for (const channel of tanks.channels) {
+                await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+            }
+            for (const state of [...live, ...tanks.states]) {
                 await this.states.setState(prefix, state, q);
             }
         }

@@ -20,7 +20,7 @@ Inspiriert vom Node-RED-Node [victron-vrm-api](https://github.com/dirkjanfaber/v
 - Listet die Geräte mit Produktname, Firmware und letzter Verbindung. Die Ordner tragen die Namen der Geräte in VRM
   (eigener Name, Produkt oder Modell), z. B. „Fronius Symo 5.0-3-M (PV Inverter 20)“.
 - Stellt bekannte Live-Werte unter festen IDs bereit (Ladezustand, PV, Netz, Verbrauch, Batterie,
-  Restlaufzeit).
+  Restlaufzeit, Batterietemperatur, AC-Ausgang, Generator, Wallbox, Tankfüllstände).
 - Stellt Energiesummen für heute, Woche, Monat und Jahr bereit: PV-Ertrag, Verbrauch, Netzbezug und -einspeisung,
   Batterie geladen und entladen, Autarkiegrad und Eigenverbrauchsquote in Prozent, dazu die einzelnen
   Energieflüsse (z. B. PV in die Batterie). Eine Anfrage pro Anlage.

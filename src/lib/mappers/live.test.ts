@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import type { VrmDiagnosticRecord } from "../types";
-import { mapLive } from "./live";
+import { mapLive, mapTanks } from "./live";
 
 function record(service: string, path: string, rawValue: number | string | null, instance = 0): VrmDiagnosticRecord {
     return {
@@ -86,5 +86,70 @@ describe("live mapper", () => {
         it("is not created without a battery monitor", () => {
             expect(valuesOf([record("system", "/Dc/Battery/Soc", 80)])).to.not.have.property("live.batteryTimeToGo");
         });
+    });
+
+    it("reads AC output, generator and EV charger power", () => {
+        const values = valuesOf([
+            record("system", "/Ac/ConsumptionOnOutput/L1/Power", 120),
+            record("system", "/Ac/ConsumptionOnOutput/L2/Power", 80),
+            record("system", "/Ac/Genset/L1/Power", 1500),
+            record("evcharger", "/Ac/Power", 3700, 40),
+            record("evcharger", "/Ac/Power", 1400, 41),
+        ]);
+        expect(values).to.include({ "live.acOutPower": 200, "live.gensetPower": 1500, "live.evChargerPower": 5100 });
+    });
+
+    it("falls back to the VE.Bus AC output", () => {
+        const values = valuesOf([record("vebus", "/Ac/Out/L1/P", 300, 276), record("vebus", "/Ac/Out/L2/P", 50, 276)]);
+        expect(values).to.include({ "live.acOutPower": 350 });
+    });
+
+    it("takes the battery temperature of one battery, not the sum", () => {
+        const values = valuesOf([
+            record("battery", "/Dc/0/Temperature", 21.5, 279),
+            record("battery", "/Dc/0/Temperature", 23, 280),
+        ]);
+        expect(values).to.include({ "live.batteryTemperature": 21.5 });
+        expect(valuesOf([record("system", "/Dc/Battery/Temperature", 19)])).to.include({
+            "live.batteryTemperature": 19,
+        });
+    });
+});
+
+describe("tank mapper", () => {
+    it("creates one folder per tank with level, remaining and fluid type", () => {
+        const result = mapTanks([
+            record("tank", "/Level", 64, 21),
+            { ...record("tank", "/Remaining", 0.128, 21), formatWithUnit: "%.3F m3" },
+            record("tank", "/FluidType", 1, 21),
+            record("tank", "/Level", 30, 20),
+            record("tank", "/FluidType", 7, 20),
+        ]);
+        expect(result.channels).to.deep.equal([
+            { id: "live.tanks", name: "Tanks" },
+            { id: "live.tanks.tank_20", name: "Tank 20 (Diesel)" },
+            { id: "live.tanks.tank_21", name: "Tank 21 (Fresh water)" },
+        ]);
+        expect(result.states.map(s => [s.id, s.value, s.common.unit])).to.deep.equal([
+            ["live.tanks.tank_20.level", 30, "%"],
+            ["live.tanks.tank_20.fluidType", 7, undefined],
+            ["live.tanks.tank_21.level", 64, "%"],
+            ["live.tanks.tank_21.remaining", 0.128, "m3"],
+            ["live.tanks.tank_21.fluidType", 1, undefined],
+        ]);
+    });
+
+    it("prefers the fluid names sent by VRM", () => {
+        const fluid = {
+            ...record("tank", "/FluidType", 1, 21),
+            dataAttributeEnumValues: [{ nameEnum: "Frischwasser", valueEnum: 1 }],
+        };
+        const result = mapTanks([record("tank", "/Level", 64, 21), fluid]);
+        expect(result.channels[1].name).to.equal("Tank 21 (Frischwasser)");
+        expect(result.states[1].common.states).to.deep.equal({ 1: "Frischwasser" });
+    });
+
+    it("returns nothing without tank sensors", () => {
+        expect(mapTanks([record("system", "/Dc/Battery/Soc", 80)])).to.deep.equal({ channels: [], states: [] });
     });
 });

@@ -537,9 +537,13 @@ class VictronVrmApi extends utils.Adapter {
       }
     }
     const live = (0, import_live.mapLive)(records);
-    if (live.length) {
+    const tanks = (0, import_live.mapTanks)(records);
+    if (live.length || tanks.states.length) {
       await this.states.ensureChannel(`${prefix}.live`, "Live values");
-      for (const state of live) {
+      for (const channel of tanks.channels) {
+        await this.states.ensureChannel(`${prefix}.${channel.id}`, channel.name);
+      }
+      for (const state of [...live, ...tanks.states]) {
         await this.states.setState(prefix, state, q);
       }
     }

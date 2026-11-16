@@ -1,5 +1,5 @@
 import type { VrmDiagnosticRecord } from "../types";
-import { newestTs, recordTs, type StateDef } from "./diagnostics";
+import { newestTs, parseUnit, recordTs, type ChannelDef, type StateDef } from "./diagnostics";
 
 /** One way to obtain a value: all records matching service + one of the paths are summed up */
 interface LiveSource {
@@ -14,6 +14,8 @@ interface LiveDefinition {
     unit?: string;
     /** Alternatives in order of preference; the first one with at least one match wins */
     sources: LiveSource[];
+    /** "sum" (default) adds up all matches, e.g. phases; "first" takes the first match, e.g. a temperature */
+    aggregate?: "sum" | "first";
 }
 
 const PHASES = ["L1", "L2", "L3"];
@@ -104,6 +106,44 @@ export const LIVE_DEFINITIONS: LiveDefinition[] = [
         unit: "W",
         sources: [{ service: "system", paths: phasePaths("/Ac/Consumption") }],
     },
+    {
+        id: "acOutPower",
+        name: "AC output power (loads on AC-out of the inverter/charger)",
+        role: "value.power",
+        unit: "W",
+        sources: [
+            { service: "system", paths: phasePaths("/Ac/ConsumptionOnOutput") },
+            { service: "vebus", paths: PHASES.map(phase => `/Ac/Out/${phase}/P`) },
+        ],
+    },
+    {
+        id: "gensetPower",
+        name: "Generator power",
+        role: "value.power",
+        unit: "W",
+        sources: [
+            { service: "system", paths: phasePaths("/Ac/Genset") },
+            { service: "genset", paths: ["/Ac/Power"] },
+        ],
+    },
+    {
+        id: "evChargerPower",
+        name: "EV charger power (all chargers)",
+        role: "value.power",
+        unit: "W",
+        sources: [{ service: "evcharger", paths: ["/Ac/Power"] }],
+    },
+    {
+        id: "batteryTemperature",
+        name: "Battery temperature",
+        role: "value.temperature",
+        unit: "°C",
+        sources: [
+            { service: "system", paths: ["/Dc/Battery/Temperature"] },
+            { service: "battery", paths: ["/Dc/0/Temperature"] },
+        ],
+        aggregate: "first",
+    },
 ];
 
 /**
@@ -111,8 +151,13 @@ export const LIVE_DEFINITIONS: LiveDefinition[] = [
  *
  * @param records - Diagnostics records
  * @param source - Service and D-Bus paths to add up
+ * @param first - Take only the first match instead of the sum
  */
-function sumSource(records: VrmDiagnosticRecord[], source: LiveSource): { sum: number; ts?: number } | undefined {
+function sumSource(
+    records: VrmDiagnosticRecord[],
+    source: LiveSource,
+    first = false,
+): { sum: number; ts?: number } | undefined {
     let sum: number | undefined;
     let ts: number | undefined;
     for (const record of records) {
@@ -125,6 +170,9 @@ function sumSource(records: VrmDiagnosticRecord[], source: LiveSource): { sum: n
         }
         sum = (sum ?? 0) + value;
         ts = newestTs([ts, recordTs(record)]);
+        if (first) {
+            break;
+        }
     }
     return sum === undefined ? undefined : { sum, ts };
 }
@@ -175,7 +223,7 @@ export function mapLive(records: VrmDiagnosticRecord[]): StateDef[] {
     for (const def of LIVE_DEFINITIONS) {
         let found: { sum: number; ts?: number } | undefined;
         for (const source of def.sources) {
-            found = sumSource(records, source);
+            found = sumSource(records, source, def.aggregate === "first");
             if (found !== undefined) {
                 break;
             }
@@ -226,4 +274,114 @@ export function mapLive(records: VrmDiagnosticRecord[]): StateDef[] {
     }
 
     return result;
+}
+
+/** Fluid types of the tank service (/FluidType), used when VRM sends no enum names */
+const FLUID_TYPES: Record<number, string> = {
+    0: "Fuel",
+    1: "Fresh water",
+    2: "Waste water",
+    3: "Live well",
+    4: "Oil",
+    5: "Black water (sewage)",
+    6: "Gasoline",
+    7: "Diesel",
+    8: "LPG",
+    9: "LNG",
+    10: "Hydraulic oil",
+    11: "Raw water",
+};
+
+/** Folders and states of the tank sensors */
+export interface MappedTanks {
+    /** "live.tanks" and one folder per tank */
+    channels: ChannelDef[];
+    /** Level, remaining volume and fluid type per tank */
+    states: StateDef[];
+}
+
+/**
+ * Numeric value of a record, null if it is missing or empty
+ *
+ * @param record - Diagnostics record
+ */
+function numberOf(record: VrmDiagnosticRecord | undefined): number | null {
+    if (!record || record.rawValue === null || record.rawValue === "") {
+        return null;
+    }
+    const value = typeof record.rawValue === "number" ? record.rawValue : Number(record.rawValue);
+    return isNaN(value) ? null : value;
+}
+
+/**
+ * One folder per tank sensor: "live.tanks.tank_<instance>" with level, remaining and fluid type
+ *
+ * @param records - Diagnostics records
+ */
+export function mapTanks(records: VrmDiagnosticRecord[]): MappedTanks {
+    const byInstance = new Map<number, Map<string, VrmDiagnosticRecord>>();
+    for (const record of records) {
+        if (record.dbusServiceType !== "tank" || !record.dbusPath) {
+            continue;
+        }
+        const paths = byInstance.get(record.instance) ?? new Map<string, VrmDiagnosticRecord>();
+        paths.set(record.dbusPath, record);
+        byInstance.set(record.instance, paths);
+    }
+
+    const channels: ChannelDef[] = [];
+    const states: StateDef[] = [];
+    for (const [instance, paths] of [...byInstance].sort(([a], [b]) => a - b)) {
+        const level = paths.get("/Level");
+        const remaining = paths.get("/Remaining");
+        const fluid = paths.get("/FluidType");
+        if (!level && !remaining) {
+            continue;
+        }
+        const fluidType = numberOf(fluid);
+        const fluidNames: Record<number, string> = fluid?.dataAttributeEnumValues?.length
+            ? Object.fromEntries(fluid.dataAttributeEnumValues.map(e => [e.valueEnum, e.nameEnum]))
+            : FLUID_TYPES;
+        const fluidName = fluidType !== null ? fluidNames[fluidType] : undefined;
+        const folder = `live.tanks.tank_${instance}`;
+        channels.push({ id: folder, name: fluidName ? `Tank ${instance} (${fluidName})` : `Tank ${instance}` });
+
+        const common = (name: string, role: string, unit?: string): StateDef["common"] => ({
+            name,
+            type: "number",
+            role,
+            ...(unit ? { unit } : {}),
+            read: true,
+            write: false,
+        });
+        if (level) {
+            states.push({
+                id: `${folder}.level`,
+                common: { ...common("Tank level", "value.fill", "%"), min: 0, max: 100 },
+                value: numberOf(level),
+                ts: recordTs(level),
+            });
+        }
+        if (remaining) {
+            // D-Bus reports m3; VRM may convert it, its format tells the unit
+            states.push({
+                id: `${folder}.remaining`,
+                common: common("Remaining volume", "value.fill", parseUnit(remaining.formatWithUnit) ?? "m³"),
+                value: numberOf(remaining),
+                ts: recordTs(remaining),
+            });
+        }
+        if (fluid) {
+            states.push({
+                id: `${folder}.fluidType`,
+                common: { ...common("Fluid type", "value"), states: fluidNames },
+                value: fluidType,
+                ts: recordTs(fluid),
+            });
+        }
+    }
+    if (channels.length) {
+        channels.unshift({ id: "live.tanks", name: "Tanks" });
+    }
+    return { channels, states };
 }

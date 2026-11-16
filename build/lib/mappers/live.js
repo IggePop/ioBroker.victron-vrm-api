@@ -20,6 +20,7 @@ var live_exports = {};
 __export(live_exports, {
   LIVE_DEFINITIONS: () => LIVE_DEFINITIONS,
   mapLive: () => mapLive,
+  mapTanks: () => mapTanks,
   timeToGo: () => timeToGo
 });
 module.exports = __toCommonJS(live_exports);
@@ -106,9 +107,47 @@ const LIVE_DEFINITIONS = [
     role: "value.power",
     unit: "W",
     sources: [{ service: "system", paths: phasePaths("/Ac/Consumption") }]
+  },
+  {
+    id: "acOutPower",
+    name: "AC output power (loads on AC-out of the inverter/charger)",
+    role: "value.power",
+    unit: "W",
+    sources: [
+      { service: "system", paths: phasePaths("/Ac/ConsumptionOnOutput") },
+      { service: "vebus", paths: PHASES.map((phase) => `/Ac/Out/${phase}/P`) }
+    ]
+  },
+  {
+    id: "gensetPower",
+    name: "Generator power",
+    role: "value.power",
+    unit: "W",
+    sources: [
+      { service: "system", paths: phasePaths("/Ac/Genset") },
+      { service: "genset", paths: ["/Ac/Power"] }
+    ]
+  },
+  {
+    id: "evChargerPower",
+    name: "EV charger power (all chargers)",
+    role: "value.power",
+    unit: "W",
+    sources: [{ service: "evcharger", paths: ["/Ac/Power"] }]
+  },
+  {
+    id: "batteryTemperature",
+    name: "Battery temperature",
+    role: "value.temperature",
+    unit: "\xB0C",
+    sources: [
+      { service: "system", paths: ["/Dc/Battery/Temperature"] },
+      { service: "battery", paths: ["/Dc/0/Temperature"] }
+    ],
+    aggregate: "first"
   }
 ];
-function sumSource(records, source) {
+function sumSource(records, source, first = false) {
   let sum;
   let ts;
   for (const record of records) {
@@ -121,6 +160,9 @@ function sumSource(records, source) {
     }
     sum = (sum != null ? sum : 0) + value;
     ts = (0, import_diagnostics.newestTs)([ts, (0, import_diagnostics.recordTs)(record)]);
+    if (first) {
+      break;
+    }
   }
   return sum === void 0 ? void 0 : { sum, ts };
 }
@@ -154,7 +196,7 @@ function mapLive(records) {
   for (const def of LIVE_DEFINITIONS) {
     let found;
     for (const source of def.sources) {
-      found = sumSource(records, source);
+      found = sumSource(records, source, def.aggregate === "first");
       if (found !== void 0) {
         break;
       }
@@ -203,10 +245,95 @@ function mapLive(records) {
   }
   return result;
 }
+const FLUID_TYPES = {
+  0: "Fuel",
+  1: "Fresh water",
+  2: "Waste water",
+  3: "Live well",
+  4: "Oil",
+  5: "Black water (sewage)",
+  6: "Gasoline",
+  7: "Diesel",
+  8: "LPG",
+  9: "LNG",
+  10: "Hydraulic oil",
+  11: "Raw water"
+};
+function numberOf(record) {
+  if (!record || record.rawValue === null || record.rawValue === "") {
+    return null;
+  }
+  const value = typeof record.rawValue === "number" ? record.rawValue : Number(record.rawValue);
+  return isNaN(value) ? null : value;
+}
+function mapTanks(records) {
+  var _a, _b, _c;
+  const byInstance = /* @__PURE__ */ new Map();
+  for (const record of records) {
+    if (record.dbusServiceType !== "tank" || !record.dbusPath) {
+      continue;
+    }
+    const paths = (_a = byInstance.get(record.instance)) != null ? _a : /* @__PURE__ */ new Map();
+    paths.set(record.dbusPath, record);
+    byInstance.set(record.instance, paths);
+  }
+  const channels = [];
+  const states = [];
+  for (const [instance, paths] of [...byInstance].sort(([a], [b]) => a - b)) {
+    const level = paths.get("/Level");
+    const remaining = paths.get("/Remaining");
+    const fluid = paths.get("/FluidType");
+    if (!level && !remaining) {
+      continue;
+    }
+    const fluidType = numberOf(fluid);
+    const fluidNames = ((_b = fluid == null ? void 0 : fluid.dataAttributeEnumValues) == null ? void 0 : _b.length) ? Object.fromEntries(fluid.dataAttributeEnumValues.map((e) => [e.valueEnum, e.nameEnum])) : FLUID_TYPES;
+    const fluidName = fluidType !== null ? fluidNames[fluidType] : void 0;
+    const folder = `live.tanks.tank_${instance}`;
+    channels.push({ id: folder, name: fluidName ? `Tank ${instance} (${fluidName})` : `Tank ${instance}` });
+    const common = (name, role, unit) => ({
+      name,
+      type: "number",
+      role,
+      ...unit ? { unit } : {},
+      read: true,
+      write: false
+    });
+    if (level) {
+      states.push({
+        id: `${folder}.level`,
+        common: { ...common("Tank level", "value.fill", "%"), min: 0, max: 100 },
+        value: numberOf(level),
+        ts: (0, import_diagnostics.recordTs)(level)
+      });
+    }
+    if (remaining) {
+      states.push({
+        id: `${folder}.remaining`,
+        common: common("Remaining volume", "value.fill", (_c = (0, import_diagnostics.parseUnit)(remaining.formatWithUnit)) != null ? _c : "m\xB3"),
+        value: numberOf(remaining),
+        ts: (0, import_diagnostics.recordTs)(remaining)
+      });
+    }
+    if (fluid) {
+      states.push({
+        id: `${folder}.fluidType`,
+        common: { ...common("Fluid type", "value"), states: fluidNames },
+        value: fluidType,
+        ts: (0, import_diagnostics.recordTs)(fluid)
+      });
+    }
+  }
+  if (channels.length) {
+    channels.unshift({ id: "live.tanks", name: "Tanks" });
+  }
+  return { channels, states };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   LIVE_DEFINITIONS,
   mapLive,
+  mapTanks,
   timeToGo
 });
 //# sourceMappingURL=live.js.map

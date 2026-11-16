@@ -38,6 +38,7 @@ victron-vrm-api.0
    ├─ info.lastTimestamp      Zeitpunkt der neuesten Daten in VRM
    ├─ info.dataStale          true, wenn VRM länger als eingestellt keine neuen Daten hat
    ├─ live.*                  bekannte Werte (siehe unten)
+   │  └─ tanks.tank_<instance> level, remaining, fluidType
    ├─ energy
    │  └─ today | week | month | year
    │     ├─ solarYield, consumption, gridImport, gridExport,
@@ -88,6 +89,19 @@ zurück. Ein Datenpunkt wird nur angelegt, wenn die Anlage den Wert meldet.
 | `live.gridPower` | W | Netzleistung, Summe aller Phasen (positiv = Bezug) |
 | `live.consumption` | W | AC-Verbrauch, Summe aller Phasen |
 | `live.batteryTimeToGo` | h | Restlaufzeit der Batterie, wie sie der Batteriemonitor berechnet, leer während des Ladens |
+| `live.batteryTemperature` | °C | Batterietemperatur (bei mehreren Batteriemonitoren die des ersten) |
+| `live.acOutPower` | W | Leistung der Verbraucher am AC-Ausgang des Wechselrichters/Laders, Summe aller Phasen |
+| `live.gensetPower` | W | Generatorleistung, Summe aller Phasen |
+| `live.evChargerPower` | W | Ladeleistung aller Wallboxen |
+
+Tanksensoren erhalten je einen Ordner `live.tanks.tank_<Instanz>`, benannt nach der Flüssigkeit, z. B.
+„Tank 21 (Fresh water)“:
+
+| Datenpunkt | Einheit | Beschreibung |
+|---|---|---|
+| `level` | % | Füllstand |
+| `remaining` | m³ (oder die Einheit, die VRM meldet) | Restmenge |
+| `fluidType` | – | Flüssigkeit als Zahl, die Namen stehen im Objekt (z. B. 1 = Frischwasser, 7 = Diesel) |
 
 ## Energiestatistik
 
