@@ -51,3 +51,20 @@ Mit `--yes` läuft das Release-Skript ohne Rückfragen. Bevor es etwas ändert, 
 unter `WORK IN PROGRESS` im Changelog zur neuen Version, aktualisiert `package.json` und `io-package.json`, baut,
 committet, taggt und pusht. Der Tag startet den Job `deploy`, der das Paket auf npm veröffentlicht. Vorher
 `dev-server watch` beenden, weil das Release `npm run build` ausführt.
+
+### News in `io-package.json`
+
+Ohne weiteres Zutun übersetzt das Release-Skript die Changelog-Einträge automatisch in die News aller Sprachen.
+Dabei übersetzt es auch Datenpunkt-IDs und Begriffe, z. B. wurde aus `energy.*.autarky` `Energie.*.Autarkie`. Deshalb
+die News der nächsten Version direkt vor dem Release von Hand schreiben:
+
+1. In `io-package.json` am Anfang von `common.news` einen Eintrag `NEXT` mit dem Text in allen 11 Sprachen anlegen
+   (eine Zeile pro Änderung, getrennt durch `\n`). Datenpunkt-IDs, `sendTo`-Befehle und VRM-Begriffe unverändert
+   lassen.
+2. Das Release mit `--all` starten: `npm run release minor -- --yes --all`. Das Skript benennt `NEXT` in die neue
+   Version um und übersetzt nichts. `--all` nimmt die nicht committete Änderung an `io-package.json` in den
+   Release-Commit auf.
+
+`NEXT` selbst nicht committen: Das Schema von `io-package.json` erlaubt dort nur Versionsnummern, sonst schlagen die
+Package-Tests fehl. Das Release-Skript schreibt `io-package.json` mit 2 Leerzeichen Einrückung; die Datei nicht mit
+Prettier formatieren, sonst enthält der nächste Diff Hunderte geänderte Zeilen.

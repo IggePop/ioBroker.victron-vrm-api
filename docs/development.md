@@ -48,3 +48,18 @@ The release script runs without questions with `--yes`. Before changing anything
 the changelog to the new version, updates `package.json` and `io-package.json`, builds, commits, tags and pushes.
 The tag starts the `deploy` job, which publishes the package to npm. Stop `dev-server watch` before, because the
 release runs `npm run build`.
+
+### News in `io-package.json`
+
+Without further steps, the release script translates the changelog entries automatically into the news of all
+languages. The translation also changes state ids and terms, e.g. `energy.*.autarky` became `Energie.*.Autarkie`.
+So write the news of the next version by hand right before the release:
+
+1. Add an entry `NEXT` at the beginning of `common.news` in `io-package.json`, with the text in all 11 languages
+   (one line per change, separated by `\n`). Keep state ids, `sendTo` commands and VRM terms unchanged.
+2. Run the release with `--all`: `npm run release minor -- --yes --all`. The script renames `NEXT` to the new version
+   and translates nothing. `--all` takes the uncommitted change of `io-package.json` into the release commit.
+
+Do not commit `NEXT` itself: the schema of `io-package.json` only allows version numbers there, so the package tests
+fail. The release script writes `io-package.json` with an indentation of 2 spaces; do not format it with Prettier,
+otherwise the next diff contains hundreds of changed lines.
