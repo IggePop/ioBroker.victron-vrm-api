@@ -28,19 +28,6 @@
         "pl": "Pierwsze wydanie\nDiagnostyka wszystkich instalacji konta VRM z najważniejszymi bieżącymi wartościami\nLista urządzeń z nazwą produktu i firmware, nazwy urządzeń VRM jako nazwy folderów\nStatystyki energii za dziś, tydzień, miesiąc i rok\nPrognoza produkcji PV i zużycia\nAlarmy z dziennika alarmów VRM\nOpcjonalne sumy dla L1–L3, znaczniki czasu VRM w stanach",
         "uk": "Перший випуск\nДіагностика всіх установок облікового запису VRM з основними поточними значеннями\nСписок пристроїв з назвою продукту та прошивкою, назви пристроїв VRM як назви папок\nЕнергетична статистика за сьогодні, тиждень, місяць і рік\nПрогноз вироблення PV та споживання\nАварійні сигнали з журналу VRM\nНеобов'язкові суми по L1–L3, мітки часу VRM як мітки часу станів",
         "zh-cn": "首个版本\nVRM 账户下所有系统的诊断数据及常用实时值\n设备列表（产品名称和固件），以 VRM 设备名称作为文件夹名称\n今天、本周、本月和本年的能源统计\n光伏发电量和用电量预测\n来自 VRM 报警日志的报警\n可选的 L1–L3 合计，状态使用 VRM 时间戳"
-      },
-      "0.0.1": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Начальная версия",
-        "pt": "lançamento inicial",
-        "nl": "Eerste uitgave",
-        "fr": "Première version",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsze wydanie",
-        "uk": "Початкова версія",
-        "zh-cn": "首次出版"
       }
     },
     "titleLang": {
